@@ -1,0 +1,17 @@
+.my-popup .leaflet-popup-content-wrapper {
+  background: #1e293b;    /* dark background */
+  color: #f8fafc;         /* light text */
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(223, 5, 5, 0.3);
+  font-family: "Inter", sans-serif;
+}
+
+.my-popup .leaflet-popup-tip {
+  background: #1e293b; /* make tip match the box */
+}
+
+.my-popup .leaflet-popup-content {
+  margin: 8px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
