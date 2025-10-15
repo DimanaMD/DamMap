@@ -159,7 +159,6 @@ const MapView = () => {
         </Popup> 
       </Marker>
 
-
       <Marker position={[42.80585, 25.25555]}>
         <Popup>
           яз. Хр. Смирненски
