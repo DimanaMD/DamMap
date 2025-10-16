@@ -184,11 +184,56 @@ const MapView = () => {
         </Popup> 
       </Marker>
 
+      
       <Marker position={[42.72701, 26.25039]}>
         <Popup>
           яз. Асеновец
         </Popup> 
       </Marker>
+
+       <Marker position={[41.76368, 25.13260]}>
+        <Popup>
+          яз. Боровица
+        </Popup> 
+      </Marker>
+
+
+      <Marker position={[42.87018, 26.90766]}>
+        <Popup>
+          яз. Камчия
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.05591, 26.76689]}>
+        <Popup>
+          яз. Тича
+        </Popup> 
+      </Marker>
+
+      <Marker position={[42.24523, 27.58374]}>
+        <Popup>
+          яз. Ясна поляна
+        </Popup> 
+      </Marker>
+
+       <Marker position={[43.40424, 26.66613]}>
+        <Popup>
+          яз. Бели лом
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.33055, 26.58111]}>
+        <Popup>
+          яз. Съединение
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.36999, 24.31666]}>
+        <Popup>
+          яз. Горен Дъбник
+        </Popup> 
+      </Marker>
+
 
     </MapContainer>
   );
