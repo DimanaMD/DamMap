@@ -184,6 +184,7 @@ const MapView = () => {
         </Popup> 
       </Marker>
 
+      
       <Marker position={[42.72701, 26.25039]}>
         <Popup>
           яз. Асеновец
