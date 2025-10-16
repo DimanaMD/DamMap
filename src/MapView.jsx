@@ -64,7 +64,7 @@ const MapView = () => {
         </Popup>
       </Marker>
 
-      <Marker position={[42.59462, 23.41755]}>
+      <Marker position={[42.55327, 23.47898]}>
         <Popup>
           яз. Пасарел(Кокаляне)
         </Popup>
@@ -232,6 +232,115 @@ const MapView = () => {
         <Popup>
           яз. Горен Дъбник
         </Popup> 
+      </Marker>
+
+      <Marker position={[43.37823, 23.18432]}>
+        <Popup>
+          яз. Огоста
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.73802, 22.58519]}>
+        <Popup>
+          яз. Рабиша
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.00013, 24.44465]}>
+        <Popup>
+          яз. Сопот
+        </Popup> 
+      </Marker>
+
+      <Marker position={[43.15100, 26.27767]}>
+        <Popup>
+          яз. Ястребино
+        </Popup> 
+      </Marker>
+
+
+       <Marker position={[42.59462, 23.41755]}>
+        <Popup>
+          яз. Панчарево
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.52095, 22.84808]}>
+        <Popup>
+          яз. Пчелина
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.44028, 24.00216]}>
+        <Popup>
+          яз. Тополница
+        </Popup>
+      </Marker>
+
+       <Marker position={[42.54880, 24.91958]}>
+        <Popup>
+          яз. Домлян
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.61564, 25.85958]}>
+        <Popup>
+          яз. Жребчево
+        </Popup>
+      </Marker>
+
+       <Marker position={[42.11401, 26.86723]}>
+        <Popup>
+          яз. Малко Шарково
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.40635, 24.57117]}>
+        <Popup>
+          яз. Пясъчник
+        </Popup>
+      </Marker>
+
+      <Marker position={[41.85173, 25.40775]}>
+        <Popup>
+          яз. Тракиец
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.99460, 27.40434]}>
+        <Popup>
+          яз. Цонево
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.17384, 23.24981]}>
+        <Popup>
+          яз. Калин
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.185508, 23.254954]}>
+        <Popup>
+          яз. Карагьол
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.61249, 23.75096]}>
+        <Popup>
+          яз. Огняново
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.70715, 27.51850]}>
+        <Popup>
+          яз. Ахелой
+        </Popup>
+      </Marker>
+
+      <Marker position={[42.72419, 27.60810]}>
+        <Popup>
+          яз. Порой
+        </Popup>
       </Marker>
 
 
