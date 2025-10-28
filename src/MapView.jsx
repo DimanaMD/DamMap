@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import {reservoirs, center, maxBoundsCn, redIcon} from './res'
+import {reservoirs, center, maxBoundsC, redIcon} from './res'
 
 const MapView = () => {
     
@@ -10,7 +10,7 @@ const MapView = () => {
       zoom={7}
       maxZoom={17}
       minZoom={8}
-      maxBounds={maxBoundsCn}
+      maxBounds={maxBoundsC}
       scrollWheelZoom={true} 
       style={{ height: "100vh", width: "100%" }}
     >
@@ -18,10 +18,13 @@ const MapView = () => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {Object.entries(reservoirs).map(([name, position]) => (
-        <Marker key={name} position={position} >
+      {reservoirs.map((re, i) => (
+        <Marker key={i} position={re.position} >
           <Popup>
-            {name}
+            <strong>{re["Име"]}</strong><br />
+            Област: {re["Област"]}<br />
+            Община: {re["Община местоположение"]}<br />
+            Басейнов район: {re["Басейнов район"]}
           </Popup>
         </Marker>
       ))}
