@@ -18,10 +18,13 @@ const MapView = () => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {Object.entries(reservoirs).map(([name, position]) => (
-        <Marker key={name} position={position} >
+      {reservoirs.map((re, i) => (
+        <Marker key={i} position={re.position} >
           <Popup>
-            {name}
+            <strong>{re["Име"]}</strong><br />
+            Област: {re["Област"]}<br />
+            Община: {re["Община местоположение"]}<br />
+            Басейнов район: {re["Басейнов район"]}
           </Popup>
         </Marker>
       ))}
