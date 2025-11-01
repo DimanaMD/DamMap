@@ -2,11 +2,13 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {reservoirs, center, maxBoundsC, redIcon} from './res'
 import { Link } from 'react-router-dom';
-
+import SearchBar from './SearchBar';
 const MapView = () => {
     
   return (
-    <MapContainer 
+    <>
+      <SearchBar/>
+      <MapContainer 
       center={center} 
       zoom={7}
       maxZoom={17}
@@ -26,12 +28,16 @@ const MapView = () => {
             Област: {re["Област"]}<br />
             Община: {re["Община местоположение"]}<br />
             Басейнов район: {re["Басейнов район"]}<br/>
-            <a href='https://google.com' target='_blank'>See more</a>
+            <p>
+              <Link to="/info">See more</Link>
+            </p>
           </Popup>
         </Marker>
       ))}
       
     </MapContainer>
+    </>
+    
   );
 };
 
