@@ -1,13 +1,17 @@
+import Info from './Info';
 import MapView from './MapView';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './index.css'; 
-import SearchBar from './SearchBar';
+
 
 const App = () => {
   return (
-    <div>
-      <SearchBar/>
-      <MapView />
-    </div>
+   <Router>
+      <Routes>
+        <Route path="/" element={<MapView />} />
+        <Route path="/info" element={<Info />} />
+      </Routes>
+    </Router>
   );
 };
 
