@@ -15,3 +15,14 @@
     border-radius: 25px;
 }
 
+.searchBar button{
+    z-index: 1000;
+    margin-left: 200px;
+    width: 100px;
+    text-decoration: none;
+    background-color: #111a;
+}
+
+#btn:visited{
+    text-decoration: none;
+}
