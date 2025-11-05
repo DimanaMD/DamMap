@@ -8,6 +8,7 @@
 }
 
 .searchBar input{
+    margin-top: 3px;
     position: inherit;
     background-color: #ccc8;
     color: #222;
@@ -15,3 +16,24 @@
     border-radius: 25px;
 }
 
+.searchBar .btn{
+    margin-left: 150px;
+    width: 30px;
+    text-decoration: none;
+    background-color: #ccc8;
+    border: 2px solid #111a;
+    border-radius: 25px;
+    transition-duration: 400ms;
+    z-index: 1000;
+}
+
+.searchBar .txt{
+    margin-left: 30px;
+    text-decoration: none;
+    color: black;
+}
+
+.btn:hover{
+    background-color: #797979;
+    color: #d2d2d2;
+}
