@@ -4,9 +4,12 @@ const SearchBar = () =>{
     return(
         <div className="searchBar">
             <input type="search" id="gsearch" name="gsearch"/>
-            <button id='btn'>
-                <Link to="/water">Откъде ти идва водата?</Link>
-            </button>
+            
+            <Link to="/water" className='txt'>
+                <button className='btn'>
+                    ?
+                </button>
+            </Link>
         </div>
     );
 }

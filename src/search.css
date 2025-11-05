@@ -8,6 +8,7 @@
 }
 
 .searchBar input{
+    margin-top: 3px;
     position: inherit;
     background-color: #ccc8;
     color: #222;
@@ -15,14 +16,24 @@
     border-radius: 25px;
 }
 
-.searchBar button{
-    z-index: 1000;
-    margin-left: 200px;
-    width: 100px;
+.searchBar .btn{
+    margin-left: 150px;
+    width: 30px;
     text-decoration: none;
-    background-color: #111a;
+    background-color: #ccc8;
+    border: 2px solid #111a;
+    border-radius: 25px;
+    transition-duration: 400ms;
+    z-index: 1000;
 }
 
-#btn:visited{
+.searchBar .txt{
+    margin-left: 30px;
     text-decoration: none;
+    color: black;
+}
+
+.btn:hover{
+    background-color: #797979;
+    color: #d2d2d2;
 }
