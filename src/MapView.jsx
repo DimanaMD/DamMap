@@ -29,7 +29,7 @@ const MapView = () => {
             Община: {re["Община местоположение"]}<br />
             Басейнов район: {re["Басейнов район"]}<br/>
             <p>
-              <Link to="/info">See more</Link>
+              <Link to={`/info/${encodeURIComponent(re["Име"])}`}> See more</Link>
             </p>
           </Popup>
         </Marker>
