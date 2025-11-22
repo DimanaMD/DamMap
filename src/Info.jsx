@@ -6,8 +6,8 @@ import {
 } from 'recharts';
 
 const Info = () => {
-  const { damName } = useParams();
-  const decodedName = decodeURIComponent(damName);
+  const { name } = useParams();
+  const decodedName = decodeURIComponent(name);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterType, setFilterType] = useState("10");
@@ -165,7 +165,7 @@ const Info = () => {
       )}
 
       <Link
-        to="/"
+        to="/Map"
         style={{
           display: "inline-block",
           marginTop: "20px",
@@ -185,7 +185,7 @@ const Info = () => {
 
 const ChartContainer = ({ children, data, rightAxis }) => (
   <div style={{ width: "100%", height: 350, marginBottom: "40px" }}>
-    <ResponsiveContainer>
+    <ResponsiveContainer >
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         {}
