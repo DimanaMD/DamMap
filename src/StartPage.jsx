@@ -4,7 +4,7 @@ const StartPage = () => {
     return(
        <>
         <header id='c'>
-
+            <Link to={"/Map"}>Click</Link>
         </header>
        </>
     );
