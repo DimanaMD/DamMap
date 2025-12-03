@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import './start.css'
+import Header from './Header';
 const StartPage = () => {
     return(
        <>
-        <header id='c'>
-            <Link to={"/Map"}>Click</Link>
-        </header>
+        <Header/>
+            
+        
        </>
     );
 }

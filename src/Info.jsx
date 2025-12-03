@@ -8,8 +8,8 @@ import {
 import Header from "./Header";
 
 const Info = () => {
-  const { damName } = useParams();
-  const decodedName = decodeURIComponent(damName);
+  const { name } = useParams();
+  const decodedName = decodeURIComponent(name);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterType, setFilterType] = useState("10");
