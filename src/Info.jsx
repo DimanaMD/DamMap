@@ -2,10 +2,22 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer
+  Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
-
 import Header from "./Header";
+
+const THEME = {
+  primary: "hsla(213, 40%, 22%, 1.00)",
+  primaryLight: "hsla(213, 40%, 35%, 1.00)",
+  danger: "#dc1d1d",
+  success: "#4caf50",
+  warning: "#ff9800",
+  info: "#00bcd4",
+  gray: "#f4f4f4",
+  textGray: "#666",
+  white: "#ffffff",
+  shadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)"
+};
 
 const Info = () => {
   const { name } = useParams();
@@ -15,246 +27,228 @@ const Info = () => {
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("volume");
 
-  const cleanDate = (isoString) => isoString.split("T")[0];
-
   useEffect(() => {
     fetch(`http://localhost:5000/api/dam/${decodedName}`)
       .then(res => res.json())
-      .then(data => {
-        const formatted = data.map(row => ({
+      .then(json => {
+        const formatted = json.map(row => ({
           ...row,
-          date: cleanDate(row.date),
+          date: row.date.split("T")[0],
         }));
-
         setData(formatted);
-        filterData("10", formatted);
+        applyFilter("10", formatted);
       })
-      .catch(err => console.error('Error fetching data:', err));
+      .catch(err => console.error('Fetch error:', err));
   }, [decodedName]);
 
-  // ✅ Wikipedia click handler with Google fallback
-  const handleLinkClick = async (e) => {
-    e.preventDefault();
-
-    const searchTitle = `язовир_${decodedName}`;
-    const wikiApi = `https://bg.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(
-      searchTitle
-    )}&format=json&origin=*`;
-
-    const googleUrl = `https://www.google.com/search?q=язовир+${encodeURIComponent(decodedName)}`;
-
-    try {
-      const res = await fetch(wikiApi);
-      const data = await res.json();
-      const pages = data.query.pages;
-      const pageId = Object.keys(pages)[0];
-
-      if (pageId !== "-1") {
-        // Wikipedia page exists
-        const wikiUrl = `https://bg.wikipedia.org/wiki/${searchTitle}`;
-        window.open(wikiUrl, "_blank");
-      } else {
-        // Page does not exist → fallback to Google search
-        window.open(googleUrl, "_blank");
-      }
-    } catch (err) {
-      window.open(googleUrl, "_blank");
-    }
-  };
-
-  const filterData = (type, fullData = data) => {
+  const applyFilter = (type, fullData = data) => {
     let filtered = [];
-
-    if (type === "10") {
-      filtered = fullData.filter((_, i) => i % 10 === 0);
-    } else if (type === "month") {
+    if (type === "10") filtered = fullData.filter((_, i) => i % 10 === 0);
+    else if (type === "month") {
       let lastMonth = null;
       filtered = fullData.filter(row => {
-        const current = new Date(row.date).getMonth();
-        if (current !== lastMonth) {
-          lastMonth = current;
-          return true;
-        }
+        const m = new Date(row.date).getMonth();
+        if (m !== lastMonth) { lastMonth = m; return true; }
         return false;
       });
     } else if (type === "year") {
       let lastYear = null;
       filtered = fullData.filter(row => {
-        const current = new Date(row.date).getFullYear();
-        if (current !== lastYear) {
-          lastYear = current;
-          return true;
-        }
+        const y = new Date(row.date).getFullYear();
+        if (y !== lastYear) { lastYear = y; return true; }
         return false;
       });
     }
-
     setFilteredData(filtered);
     setFilterType(type);
   };
 
-  const constantsAvailable = data.length > 0;
+  const hasData = data.length > 0;
+  const deadVol = hasData ? data[0].Мъртъв_обем : 0;
+  const totalVol = hasData ? data[0].Общ_обем : 0;
 
   return (
-    <>
-      <Header />
+    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+      <div style={styles.fixedHeader}>
+        <Header />
+      </div>
 
-      <div style={{ padding: "2rem" }}>
-        {/* Clickable title */}
-        <h1>
-          <span
-            onClick={handleLinkClick}
-            style={{
-              color: "hsla(213, 40%, 22%, 1.00)",
-              textDecoration: "none",
-              cursor: "pointer"
-            }}
-            onMouseOver={(e) => e.currentTarget.style.textDecoration = "underline"}
-            onMouseOut={(e) => e.currentTarget.style.textDecoration = "none"}
-          >
-            яз.{decodedName} 🔗
-          </span>
-        </h1>
+      <main style={styles.mainContent}>
+        <header style={{ marginBottom: "2rem" }}>
+          <h1 style={{ fontSize: "2.5rem", color: THEME.primary, marginBottom: "0.5rem" }}>
+            яз. {decodedName}
+          </h1>
+          <p style={{ color: THEME.textGray }}>Historical data and volume analysis</p>
+        </header>
 
-        {/* Constant Volume Info */}
-        {constantsAvailable && (
-          <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-            <div style={{
-              padding: "12px 24px",
-              background:  "hsla(213, 40%, 22%, 1.00)",
-              color: "white",
-              borderRadius: "10px",
-              fontWeight: "bold"
-            }}>
-              Total Volume: {data[0].Общ_обем} m³
-            </div>
-
-            <div style={{
-              padding: "12px 24px",
-              background: "#dc1d1dff",
-              color: "white",
-              borderRadius: "10px",
-              fontWeight: "bold"
-            }}>
-              Dead Volume: {data[0].Мъртъв_обем} m³
-            </div>
+        {hasData && (
+          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+            <StatCard label="Total Capacity" value={totalVol} color={THEME.primary} />
+            <StatCard label="Dead Volume" value={deadVol} color={THEME.danger} />
           </div>
         )}
 
-        {/* Chart Tabs */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          {[
-            { label: "Volume", value: "volume" },
-            { label: "Percent", value: "percent" },
-            { label: "Flow", value: "flow" },
-          ].map(btn => (
-            <button
-              key={btn.value}
-              onClick={() => setActiveChart(btn.value)}
-              style={{
-                flex: 1,
-                padding: "12px",
-                borderRadius: "10px",
-                background: activeChart === btn.value ? "hsla(212, 36%, 20%, 1.00)" : "#bbb",
-                color: "white",
-                border: "none",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              {btn.label}
-            </button>
-          ))}
+        <div style={styles.controlPanel}>
+          <div style={styles.buttonGroup}>
+            {['volume', 'percent', 'flow'].map(type => (
+              <button 
+                key={type}
+                onClick={() => setActiveChart(type)}
+                style={{
+                  ...styles.tabBtn,
+                  backgroundColor: activeChart === type ? THEME.primary : THEME.white,
+                  color: activeChart === type ? THEME.white : THEME.primary,
+                }}
+              >
+                {type.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          <div style={styles.buttonGroup}>
+            {[{l: '10 Days', v: '10'}, {l: 'Monthly', v: 'month'}, {l: 'Yearly', v: 'year'}].map(f => (
+              <button 
+                key={f.v}
+                onClick={() => applyFilter(f.v)}
+                style={{
+                  ...styles.filterBtn,
+                  borderColor: filterType === f.v ? THEME.primary : "#ddd",
+                  color: filterType === f.v ? THEME.primary : THEME.textGray,
+                  fontWeight: filterType === f.v ? "600" : "400"
+                }}
+              >
+                {f.l}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Time Filter Buttons */}
-        <div style={{ marginBottom: "20px" }}>
-          {[
-            { label: "Every 10 days", value: "10" },
-            { label: "Every month", value: "month" },
-            { label: "Every year", value: "year" },
-          ].map(btn => (
-            <button
-              key={btn.value}
-              onClick={() => filterData(btn.value)}
-              style={{
-                marginRight: "10px",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                background: filterType === btn.value ? "hsla(213, 40%, 22%, 1.00)" : "#ccc",
-                color: filterType === btn.value ? "white" : "black",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              {btn.label}
-            </button>
-          ))}
+        <div style={styles.chartWrapper}>
+          {activeChart === "volume" && (
+            <ChartLayout data={filteredData}>
+              {/* Changed type to "monotone" for smoothness */}
+              <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke={THEME.success} strokeWidth={3} name="Available" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke={THEME.primaryLight} strokeWidth={2} name="Usable" dot={false} />
+              <ReferenceLine yAxisId="left" y={deadVol} stroke={THEME.danger} strokeDasharray="8 4" label={{ position: 'right', value: 'Dead Vol', fill: THEME.danger, fontSize: 12 }} />
+            </ChartLayout>
+          )}
+
+          {activeChart === "percent" && (
+            <ChartLayout data={filteredData} isPercent>
+              <Line yAxisId="left" type="monotone" dataKey="Наличен_процент" stroke={THEME.warning} strokeWidth={3} name="Available %" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разполагаем_процент" stroke={THEME.info} strokeWidth={2} name="Usable %" dot={false} />
+            </ChartLayout>
+          )}
+
+          {activeChart === "flow" && (
+            <ChartLayout data={filteredData}>
+              <Line yAxisId="left" type="monotone" dataKey="Приток" stroke={THEME.success} strokeWidth={2} name="Inflow" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разход" stroke={THEME.danger} strokeWidth={2} name="Outflow" dot={false} />
+            </ChartLayout>
+          )}
         </div>
 
-        {/* Active Chart */}
-        {activeChart === "volume" && (
-          <ChartContainer data={filteredData}>
-            <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke="#4caf50" name="Available Volume" />
-            <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke="#f44336" name="Usable Volume" />
-          </ChartContainer>
-        )}
-
-        {activeChart === "percent" && (
-          <ChartContainer data={filteredData} rightAxis>
-            <Line yAxisId="right" type="monotone" dataKey="Наличен_процент" stroke="#ff9800" name="Available %" />
-            <Line yAxisId="right" type="monotone" dataKey="Разполагаем_процент" stroke="#00bcd4" name="Usable %" />
-          </ChartContainer>
-        )}
-
-        {activeChart === "flow" && (
-          <ChartContainer data={filteredData}>
-            <Line yAxisId="left" type="monotone" dataKey="Приток" stroke="#8bc34a" name="Inflow" />
-            <Line yAxisId="left" type="monotone" dataKey="Разход" stroke="#e91e63" name="Outflow" />
-          </ChartContainer>
-        )}
-
-        <Link
-          to="/Map"
-          style={{
-            display: "inline-block",
-            marginTop: "20px",
-            textDecoration: "none",
-            backgroundColor: "hsla(213, 40%, 22%, 1.00)" ,
-            color: "white",
-            padding: "10px 20px",
-            borderRadius: "8px"
-          }}
-        >
-          ⬅️ Back to map
+        <Link to="/Map" style={styles.backBtn}>
+          ← Return to Map
         </Link>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 
-// Reusable Chart Component
-const ChartContainer = ({ children, data, rightAxis }) => (
-  <div style={{ width: "100%", height: 350, marginBottom: "40px" }}>
+// --- Sub-Components ---
+const StatCard = ({ label, value, color }) => (
+  <div style={{
+    flex: "1 1 250px",
+    padding: "1.5rem",
+    backgroundColor: THEME.white,
+    borderRadius: "12px",
+    boxShadow: THEME.shadow,
+    borderLeft: `6px solid ${color}`
+  }}>
+    <div style={{ color: THEME.textGray, fontSize: "0.9rem", fontWeight: "600", marginBottom: "0.5rem" }}>{label}</div>
+    <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: THEME.primary }}>{value.toLocaleString()} <span style={{fontSize: '1rem'}}>m³</span></div>
+  </div>
+);
+
+const ChartLayout = ({ children, data, isPercent }) => (
+  <div style={{ width: "100%", height: 450 }}>
     <ResponsiveContainer>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="date"
-          tickFormatter={(value) => value} 
-        />
-        {!rightAxis && (
-          <YAxis yAxisId="left" label={{ value: "m³", angle: -90, position: "insideLeft" }} />
-        )}
-        {rightAxis && (
-          <YAxis yAxisId="right" orientation="right" label={{ value: "%", angle: 90, position: "insideRight" }} />
-        )}
-        <Tooltip labelFormatter={(value) => value} />
-        <Legend />
+      <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+        <XAxis dataKey="date" tick={{fontSize: 12}} minTickGap={30} />
+        <YAxis yAxisId="left" tick={{fontSize: 12}} label={{ value: isPercent ? '%' : 'm³', angle: -90, position: 'insideLeft' }} />
+        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: THEME.shadow }} />
+        <Legend wrapperStyle={{ paddingTop: '20px' }} />
         {children}
       </LineChart>
     </ResponsiveContainer>
   </div>
 );
+
+const styles = {
+  fixedHeader: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    zIndex: 1000,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
+  },
+  mainContent: {
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "2rem",
+    paddingTop: "100px" 
+  },
+  controlPanel: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: "1rem",
+    marginBottom: "2rem"
+  },
+  buttonGroup: {
+    display: "flex",
+    backgroundColor: "#eee",
+    padding: "4px",
+    borderRadius: "8px",
+    gap: "4px"
+  },
+  tabBtn: {
+    padding: "8px 20px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    transition: "all 0.2s"
+  },
+  filterBtn: {
+    padding: "8px 16px",
+    backgroundColor: "transparent",
+    border: "1px solid",
+    borderRadius: "20px",
+    cursor: "pointer",
+    fontSize: "0.85rem"
+  },
+  chartWrapper: {
+    backgroundColor: THEME.white,
+    padding: "2rem",
+    borderRadius: "16px",
+    boxShadow: THEME.shadow,
+    marginBottom: "2rem"
+  },
+  backBtn: {
+    display: "inline-block",
+    padding: "12px 24px",
+    backgroundColor: THEME.primary,
+    color: THEME.white,
+    borderRadius: "8px",
+    textDecoration: "none",
+    fontWeight: "600",
+    transition: "transform 0.2s"
+  }
+};
 
 export default Info;
