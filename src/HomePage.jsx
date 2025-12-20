@@ -1,13 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./HomePage.css";
+import "./styles/HomePage.css";
 
-import damImg from "./dam.jpg";
-import dam1 from "./dam1.jpg";
-import dam2 from "./dam2.jpg";
-import dam3 from "./dam3.jpg";
+import damImg from "./assets/dam.jpg";
+import dam1 from "./assets/dam1.jpg";
+import dam2 from "./assets/dam2.jpg";
+import dam3 from "./assets/dam3.jpg";
 
-import damsData from "./dams_data.json";
+import damsData from "./assets/dams_data.json";
 
 const HomePage = () => {
   const navigate = useNavigate();
