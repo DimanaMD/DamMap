@@ -4,20 +4,33 @@ import logo from "./logo.png";
 
 const Header = () => {
   return (
-    <header className="header-container">
+   <header className="header-container" style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      zIndex: 1000,
+      display: "flex",
+      justifyContent: "space-between", 
+      alignItems: "center",
+      backgroundColor: "white", // Ensure it's not transparent
+      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+      padding: "0 20px",
+      height: "100px"
+    }}>
 
-      {/* Left: Home button */}
+      {/*Home*/}
       <Link to="/" className="header-btn">
         <span className="material-icons">home</span>
       </Link>
 
-      {/* Center: Logo + title */}
+      {/* Logo*/}
       <div className="header-center">
         <img src={logo} alt="logo" className="header-logo" />
         <h1 className="header-title">Язовири БГ</h1>
       </div>
 
-      {/* Right: Map button */}
+      {/* Map*/}
       <Link to="/Map" className="header-btn">
         <span className="material-icons">map</span>
       </Link>
