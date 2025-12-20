@@ -126,7 +126,7 @@ const Info = () => {
         <div style={styles.chartWrapper}>
           {activeChart === "volume" && (
             <ChartLayout data={filteredData}>
-              {/* Changed type to "monotone" for smoothness */}
+              {}
               <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke={THEME.success} strokeWidth={3} name="Available" dot={false} />
               <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke={THEME.primaryLight} strokeWidth={2} name="Usable" dot={false} />
               <ReferenceLine yAxisId="left" y={deadVol} stroke={THEME.danger} strokeDasharray="8 4" label={{ position: 'right', value: 'Dead Vol', fill: THEME.danger, fontSize: 12 }} />
