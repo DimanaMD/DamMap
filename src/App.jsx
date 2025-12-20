@@ -1,7 +1,7 @@
 import Info from './Info';
 import MapView from './MapView';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import './index.css'; 
+import './styles/index.css'; 
 import HomePage from './HomePage';
 import Header from './Header';
 

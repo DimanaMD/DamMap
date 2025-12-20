@@ -1,8 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import {reservoirs, center, maxBoundsC, redIcon} from './res'
+import {reservoirs, center, maxBoundsC, redIcon} from './assets/res.js'
 import { Link } from 'react-router-dom';
-import Header from './Header';
 const MapView = () => {
     
   return (
