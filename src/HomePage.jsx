@@ -15,11 +15,12 @@ const HomePage = () => {
   const damImages = [dam1, dam2, dam3];
 
   return (
+    <>
+    <div style={{ paddingTop: "100px" }}></div>
     <div
       className="home-container"
       style={{ backgroundImage: `url(${damImg})` }}
     >
-    
       {/* LEFT SIDE */}
       <div className="home-left">
         <h1 className="home-title">
@@ -65,6 +66,8 @@ const HomePage = () => {
   ))}
 </div>
     </div>
+    </>
+    
   );
 };
 

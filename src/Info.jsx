@@ -6,6 +6,8 @@ import {
 } from 'recharts';
 import Header from "./Header";
 import { styles, THEME } from "./assets/Javascript/infoStyles";
+import damsData from "./json/dams_data.json"
+
 
 const Info = () => {
   const { name } = useParams();
@@ -14,6 +16,7 @@ const Info = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("volume");
+  const damDetails = damsData.find(d => d["Име"] === decodedName);
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/dam/${decodedName}`)
@@ -63,11 +66,20 @@ const Info = () => {
 
       <main style={styles.mainContent}>
         <header style={{ marginBottom: "2rem" }}>
-          <h1 style={{ fontSize: "2.5rem", color: THEME.primary, marginBottom: "0.5rem" }}>
-            яз. {decodedName}
-          </h1>
-          <p style={{ color: THEME.textGray }}>Historical data and volume analysis</p>
-        </header>
+  <h1 style={{ fontSize: "2.5rem", color: THEME.primary, marginBottom: "0.2rem" }}>
+    яз. {decodedName}
+  </h1>
+  
+  {damDetails && (
+    <div style={{ marginBottom: "0.5rem", fontSize: "1.1rem" }}>
+      <span style={{ color: THEME.primaryLight, fontWeight: "600" }}>{damDetails["Област"]}</span>
+      <span style={{ color: "#ccc", margin: "0 10px" }}>|</span>
+      <span style={{ color: THEME.textGray }}>{damDetails["Басейнов район"]}</span>
+    </div>
+  )}
+
+  <p style={{ color: THEME.textGray, marginTop: "0" }}>Historical data and volume analysis</p>
+</header>
 
         {hasData && (
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>

@@ -10,7 +10,6 @@ const App = () => {
   return (
    <Router>
     <Header/>
-    <div style={{ paddingTop: "100px" }}></div>
       <Routes>
         <Route path = "/" element ={<HomePage/>}/>
         <Route path="/Map" element={<MapView />} />

@@ -6,6 +6,7 @@ const MapView = () => {
     
   return (
     <>
+    <div style={{ paddingTop: "100px" }}></div>
       <MapContainer 
       center={center} 
       zoom={8}
