@@ -5,7 +5,7 @@ import {
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
 } from 'recharts';
 import Header from "./Header";
-import { styles, THEME } from "./assets/infoStyles";
+import { styles, THEME } from "./assets/Javascript/infoStyles";
 
 const Info = () => {
   const { name } = useParams();
