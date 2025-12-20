@@ -2,18 +2,17 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import {reservoirs, center, maxBoundsC, redIcon} from './res'
 import { Link } from 'react-router-dom';
-import SearchBar from './SearchBar';
+import Header from './Header';
 const MapView = () => {
     
   return (
     <>
-      <SearchBar/>
+      <Header/>
       <MapContainer 
       center={center} 
       zoom={7}
       maxZoom={17}
       minZoom={8}
-      maxBounds={maxBoundsC}
       scrollWheelZoom={true} 
       style={{ height: "100vh", width: "100%" }}
     >

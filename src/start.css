@@ -1,0 +1,17 @@
+*{
+    margin: 0%;
+    padding: 0%;
+    box-sizing: border-box;
+}
+
+#c{
+    position: fixed;
+    height: 100px;
+    width: 100%;
+    z-index: 2000;
+    background-color: aliceblue ;
+}
+
+p{
+    width: 30px;
+}
