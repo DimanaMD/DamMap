@@ -1,13 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./styles/HomePage.css";
+import "./assets/styles/HomePage.css";
 
-import damImg from "./assets/dam.jpg";
-import dam1 from "./assets/dam1.jpg";
-import dam2 from "./assets/dam2.jpg";
-import dam3 from "./assets/dam3.jpg";
+import damImg from "./assets/images/dam.jpg";
+import dam1 from "./assets/images/dam1.jpg";
+import dam2 from "./assets/images/dam2.jpg";
+import dam3 from "./assets/images/dam3.jpg";
 
-import damsData from "./assets/dams_data.json";
+import damsData from "./json/dams_data.json";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -15,27 +15,28 @@ const HomePage = () => {
   const damImages = [dam1, dam2, dam3];
 
   return (
+    <>
+    <div style={{ paddingTop: "100px" }}></div>
     <div
       className="home-container"
       style={{ backgroundImage: `url(${damImg})` }}
     >
-    
       {/* LEFT SIDE */}
       <div className="home-left">
         <h1 className="home-title">
-          BULGARIAN DAMS <br /> DATA <br /> <span>MONITORING</span>
+          БЪЛГАРСКИ ЯЗОВИРИ <br /> ДАННИ <br /> <span>НАБЛЮДЕНИЕ</span>
         </h1>
 
         <p className="home-description">
-          Discover detailed insights about dams across the country.  
-          Explore locations, capacity, values, and more.
+          Открийте подробна информация за язовирите в цялата страна.
+          Разгледайте местоположения, капацитет, стойности и други.
         </p>
 
         <button
           className="home-main-btn"
           onClick={() => navigate("/map")}
         >
-          Go to Map
+          Към картата
         </button>
       </div>
 
@@ -58,13 +59,15 @@ const HomePage = () => {
         className="home-card-btn"
         onClick={() => navigate(`/dams/${encodeURIComponent(dam["Име"])}`)}
       >
-        View Details
+        Виж детайли
       </button>
 
     </div>
   ))}
 </div>
     </div>
+    </>
+    
   );
 };
 

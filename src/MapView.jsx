@@ -1,11 +1,12 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import {reservoirs, center, maxBoundsC, redIcon} from './assets/res.js'
+import {reservoirs, center, maxBoundsC, redIcon} from './assets/Javascript/res.js'
 import { Link } from 'react-router-dom';
 const MapView = () => {
     
   return (
     <>
+    <div style={{ paddingTop: "100px" }}></div>
       <MapContainer 
       center={center} 
       zoom={8}
