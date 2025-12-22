@@ -24,19 +24,19 @@ const HomePage = () => {
       {/* LEFT SIDE */}
       <div className="home-left">
         <h1 className="home-title">
-          BULGARIAN DAMS <br /> DATA <br /> <span>MONITORING</span>
+          БЪЛГАРСКИ ЯЗОВИРИ <br /> ДАННИ <br /> <span>НАБЛЮДЕНИЕ</span>
         </h1>
 
         <p className="home-description">
-          Discover detailed insights about dams across the country.  
-          Explore locations, capacity, values, and more.
+          Открийте подробна информация за язовирите в цялата страна.
+          Разгледайте местоположения, капацитет, стойности и други.
         </p>
 
         <button
           className="home-main-btn"
           onClick={() => navigate("/map")}
         >
-          Go to Map
+          Към картата
         </button>
       </div>
 
@@ -59,7 +59,7 @@ const HomePage = () => {
         className="home-card-btn"
         onClick={() => navigate(`/dams/${encodeURIComponent(dam["Име"])}`)}
       >
-        View Details
+        Виж детайли
       </button>
 
     </div>

@@ -17,6 +17,11 @@ const Info = () => {
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("volume");
   const damDetails = damsData.find(d => d["Име"] === decodedName);
+  const labelsBg = {
+  volume: 'ОБЕМ',
+  percent: 'ПРОЦЕНТ',
+  flow: 'ПРИЛИВ/ОТЛИВ',
+};
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/dam/${decodedName}`)
@@ -78,13 +83,13 @@ const Info = () => {
     </div>
   )}
 
-  <p style={{ color: THEME.textGray, marginTop: "0" }}>Historical data and volume analysis</p>
+  <p style={{ color: THEME.textGray, marginTop: "0" }}>Исторически данни и статистически анализ</p>
 </header>
 
         {hasData && (
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
-            <StatCard label="Total Capacity" value={totalVol} color={THEME.primary} />
-            <StatCard label="Dead Volume" value={deadVol} color={THEME.danger} />
+            <StatCard label="Общ обем" value={totalVol} color={THEME.primary} />
+            <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} />
           </div>
         )}
 
@@ -100,13 +105,13 @@ const Info = () => {
                   color: activeChart === type ? THEME.white : THEME.primary,
                 }}
               >
-                {type.toUpperCase()}
+                {labelsBg[type]}
               </button>
             ))}
           </div>
 
           <div style={styles.buttonGroup}>
-            {[{l: '10 Days', v: '10'}, {l: 'Monthly', v: 'month'}, {l: 'Yearly', v: 'year'}].map(f => (
+            {[{l: '10 Дни', v: '10'}, {l: 'Месечно', v: 'month'}, {l: 'Годишно', v: 'year'}].map(f => (
               <button 
                 key={f.v}
                 onClick={() => applyFilter(f.v)}
@@ -127,23 +132,23 @@ const Info = () => {
           {activeChart === "volume" && (
             <ChartLayout data={filteredData}>
               {}
-              <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke={THEME.success} strokeWidth={3} name="Available" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke={THEME.primaryLight} strokeWidth={2} name="Usable" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke={THEME.success} strokeWidth={3} name="Наличен обем" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke={THEME.primaryLight} strokeWidth={2} name="Използваем" dot={false} />
               <ReferenceLine yAxisId="left" y={deadVol} stroke={THEME.danger} strokeDasharray="8 4" label={{ position: 'right', value: 'Dead Vol', fill: THEME.danger, fontSize: 12 }} />
             </ChartLayout>
           )}
 
           {activeChart === "percent" && (
             <ChartLayout data={filteredData} isPercent>
-              <Line yAxisId="left" type="monotone" dataKey="Наличен_процент" stroke={THEME.warning} strokeWidth={3} name="Available %" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разполагаем_процент" stroke={THEME.info} strokeWidth={2} name="Usable %" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Наличен_процент" stroke={THEME.warning} strokeWidth={3} name="Наличен %" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разполагаем_процент" stroke={THEME.info} strokeWidth={2} name="Използваем %" dot={false} />
             </ChartLayout>
           )}
 
           {activeChart === "flow" && (
             <ChartLayout data={filteredData}>
-              <Line yAxisId="left" type="monotone" dataKey="Приток" stroke={THEME.success} strokeWidth={2} name="Inflow" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разход" stroke={THEME.danger} strokeWidth={2} name="Outflow" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Приток" stroke={THEME.success} strokeWidth={2} name="Прилив" dot={false} />
+              <Line yAxisId="left" type="monotone" dataKey="Разход" stroke={THEME.danger} strokeWidth={2} name="Отлив" dot={false} />
             </ChartLayout>
           )}
         </div>
