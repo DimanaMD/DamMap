@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './assets/styles/index.css'; 
 import HomePage from './HomePage';
 import Header from './Header';
+import Path from './Route'
 
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
         <Route path = "/" element ={<HomePage/>}/>
         <Route path="/Map" element={<MapView />} />
         <Route path="/info/:name" element={<Info />} />
+        <Route path="/path" element={<Path/>}/>
       </Routes>
     </Router>
   );

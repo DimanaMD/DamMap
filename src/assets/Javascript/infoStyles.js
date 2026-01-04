@@ -74,3 +74,13 @@ export const styles = {
     transition: "transform 0.2s"
   }
 };
+
+export const panelStyle = {
+  position: "absolute",
+  background: "#ffffff",
+  padding: "12px 14px",
+  borderRadius: "8px",
+  boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
+  zIndex: 1000,
+  fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+};

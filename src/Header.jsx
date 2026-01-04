@@ -20,13 +20,16 @@ const Header = () => {
     }}>
 
       {/*Home*/}
-      <Link to="/" className="header-btn">
+      <Link to="/path" className="header-btn">
         <span className="material-icons">home</span>
       </Link>
 
       {/* Logo*/}
       <div className="header-center">
-        <img src={logo} alt="logo" className="header-logo" />
+        <Link to="/">
+          <img src={logo} alt="logo" className="header-logo" />
+        </Link>
+        
         <h1 className="header-title">Язовири БГ</h1>
       </div>
 

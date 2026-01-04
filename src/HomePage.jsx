@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./assets/styles/HomePage.css";
-
+import { Link } from "react-router-dom";
 import damImg from "./assets/images/dam.jpg";
 import dam1 from "./assets/images/dam1.jpg";
 import dam2 from "./assets/images/dam2.jpg";
@@ -63,8 +63,8 @@ const HomePage = () => {
       </button>
 
     </div>
-  ))}
-</div>
+    ))}
+    </div>
     </div>
     </>
     

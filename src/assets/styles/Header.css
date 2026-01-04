@@ -28,7 +28,7 @@ body {
 
 .header-logo {
   height: 75px;
-  margin-bottom: -3px;
+  margin-bottom: -15px;
   transition: transform 0.3s ease;
 }
 

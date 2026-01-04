@@ -158,7 +158,6 @@ const Info = () => {
   );
 };
 
-// --- Sub-Components ---
 const StatCard = ({ label, value, color }) => (
   <div style={{
     flex: "1 1 250px",
