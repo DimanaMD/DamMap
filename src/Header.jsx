@@ -19,7 +19,6 @@ const Header = () => {
       height: "100px"
     }}>
 
-      {/*Home*/}
       <Link to="/path" className="header-btn">
         <span className="material-icons">home</span>
       </Link>

@@ -9,140 +9,273 @@ import {
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import { reservoirs2 } from './assets/Javascript/res.js';
+import { reservoirs2 } from "./assets/Javascript/res.js";
 import { panelStyle } from "./assets/Javascript/infoStyles.js";
 
+/* ---------- Leaflet marker fix ---------- */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
 });
 
+/* ---------- Distance ---------- */
 function distance(a, b) {
   const R = 6371;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
   const x =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(a.lat * Math.PI / 180) *
-      Math.cos(b.lat * Math.PI / 180) *
+    Math.cos((a.lat * Math.PI) / 180) *
+      Math.cos((b.lat * Math.PI) / 180) *
       Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
-function findNearest(point) {
-  return reservoirs2.reduce((nearest, r) => {
-    const d = distance(
-      point,
-      { lat: r.position[0], lng: r.position[1] }
-    );
+/* ---------- OBLAST NORMALIZATION ---------- */
+const OBLAST_MAP = {
+  "sofia": "софия",
+  "sofia city": "софия",
+  "sofia-grad": "софия",
+  "област софия-град": "софия",
+
+  "sofia province": "софийска област",
+  "област софийска област": "софийска област",
+
+  "plovdiv": "пловдив",
+  "varna": "варна",
+  "burgas": "бургас",
+  "ruse": "русе",
+  "pernik": "перник",
+  "pleven": "плевен",
+  "vidin": "видин",
+  "montana": "монтана",
+  "vratsa": "враца",
+  "lovech": "ловеч",
+  "gabrovo": "габрово",
+  "razgrad": "разград",
+  "silistra": "силистра",
+  "shumen": "шумен",
+  "targovishte": "търговище",
+  "dobrich": "добрич",
+  "sliven": "сливен",
+  "yambol": "ямбол",
+  "haskovo": "хасково",
+  "kardzhali": "кърджали",
+  "smolyan": "смолян",
+  "blagoevgrad": "благоевград",
+  "kyustendil": "кюстендил",
+  "pazardzhik": "пазарджик",
+  "stara zagora": "стара загора"
+};
+
+function normalizeOblast(name) {
+  if (!name) return "";
+  const key = name.toLowerCase();
+  return OBLAST_MAP[key] || key;
+}
+
+/* ---------- Reverse admin_level=6 ---------- */
+async function getOblastByAdminLevel(lat, lng) {
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&addressdetails=1&lat=${lat}&lon=${lng}`
+  );
+  const data = await res.json();
+  return (
+    data.address.state ||
+    data.address.county ||
+    ""
+  );
+}
+
+/* ---------- Geocode full address ---------- */
+async function geocodeAddress(city, district, street) {
+  const query = `${street}, ${district}, ${city}, Bulgaria`;
+
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+      query
+    )}`
+  );
+
+  const data = await res.json();
+  if (!data.length) return null;
+
+  const lat = parseFloat(data[0].lat);
+  const lng = parseFloat(data[0].lon);
+
+  const oblastRaw = await getOblastByAdminLevel(lat, lng);
+
+  return {
+    lat,
+    lng,
+    oblast: normalizeOblast(oblastRaw)
+  };
+}
+
+/* ---------- Reservoir search ---------- */
+function expandOblastSearch(oblast) {
+  if (oblast === "софия") {
+    return ["софия", "софийска област"];
+  }
+  return [oblast];
+}
+
+function findReservoirByOblast(point, oblast) {
+  const oblasts = expandOblastSearch(oblast);
+
+  const candidates = reservoirs2.filter(r =>
+    oblasts.includes(normalizeOblast(r.Област))
+  );
+
+  if (!candidates.length) return null;
+
+  return candidates.reduce((nearest, r) => {
+    const d = distance(point, {
+      lat: r.position[0],
+      lng: r.position[1]
+    });
     return !nearest || d < nearest.dist
       ? { ...r, dist: d }
       : nearest;
   }, null);
 }
 
-async function geocode(address) {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-  );
-  const data = await res.json();
-  if (!data.length) return null;
-  return {
-    lat: parseFloat(data[0].lat),
-    lng: parseFloat(data[0].lon)
-  };
+function findNearestReservoir(point) {
+  return reservoirs2.reduce((nearest, r) => {
+    const d = distance(point, {
+      lat: r.position[0],
+      lng: r.position[1]
+    });
+    return !nearest || d < nearest.dist
+      ? { ...r, dist: d }
+      : nearest;
+  }, null);
 }
 
+/* ---------- Routing ---------- */
 async function fetchRoute(start, end) {
   const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-  
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.routes && data.routes.length > 0) {
-      return data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-    }
-    return null;
-  } catch (error) {
-    console.error("Routing error:", error);
-    return null;
-  }
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.routes?.length) return null;
+
+  return data.routes[0].geometry.coordinates.map(c => [
+    c[1],
+    c[0]
+  ]);
 }
 
+/* ---------- Styles ---------- */
+const inputStyle = {
+  width: "160px",
+  padding: "8px 10px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  fontSize: "14px"
+};
+
+/* ---------- Component ---------- */
 export default function Route() {
-  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
+  const [street, setStreet] = useState("");
+
   const [point, setPoint] = useState(null);
   const [nearest, setNearest] = useState(null);
-  const [routePath, setRoutePath] = useState([]); 
+  const [routePath, setRoutePath] = useState([]);
+  const [cityOblast, setCityOblast] = useState("");
 
   async function handleSearch(e) {
     e.preventDefault();
-    const location = await geocode(address);
-    if (!location) return alert("Address not found");
 
-    const dam = findNearest(location);
-    setPoint(location);
+    const location = await geocodeAddress(
+      city,
+      district,
+      street
+    );
+
+    if (!location) {
+      alert("Адресът не беше намерен");
+      return;
+    }
+
+    const point = { lat: location.lat, lng: location.lng };
+    setCityOblast(location.oblast);
+
+    const dam =
+      findReservoirByOblast(point, location.oblast) ||
+      findNearestReservoir(point);
+
+    setPoint(point);
     setNearest(dam);
 
-    const path = await fetchRoute(location, dam.position);
-    if (path) {
-      setRoutePath(path);
-    } else {
-      setRoutePath([[location.lat, location.lng], dam.position]);
-    }
+    const path = await fetchRoute(point, dam.position);
+    setRoutePath(
+      path || [[point.lat, point.lng], dam.position]
+    );
   }
 
   return (
     <>
+      {/* Search panel */}
       <form
-  onSubmit={handleSearch}
-  style={{
-    ...panelStyle,
-    top: 103,         
-    left: 680,
-    display: "flex",
-    gap: "8px",
-    alignItems: "center"
-  }}
->
-  <input
-    value={address}
-    onChange={e => setAddress(e.target.value)}
-    placeholder="Search address…"
-    style={{
-      width: "240px",
-      padding: "8px 10px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      fontSize: "14px"
-    }}
-  />
-  <button
-    style={{
-      padding: "8px 14px",
-      borderRadius: "6px",
-      border: "none",
-      background: "#2563eb",
-      color: "#fff",
-      fontSize: "14px",
-      cursor: "pointer"
-    }}
-  >
-    Search
-  </button>
-</form>
+        onSubmit={handleSearch}
+        style={{
+          ...panelStyle,
+          top: 103,
+          left: 680,
+          display: "flex",
+          gap: "6px",
+          alignItems: "center"
+        }}
+      >
+        <input
+          value={city}
+          onChange={e => setCity(e.target.value)}
+          placeholder="Град"
+          required
+          style={inputStyle}
+        />
+        <input
+          value={district}
+          onChange={e => setDistrict(e.target.value)}
+          placeholder="Квартал"
+          required
+          style={inputStyle}
+        />
+        <input
+          value={street}
+          onChange={e => setStreet(e.target.value)}
+          placeholder="Улица и номер"
+          required
+          style={inputStyle}
+        />
+        <button
+          style={{
+            padding: "8px 14px",
+            borderRadius: "6px",
+            border: "none",
+            background: "#2563eb",
+            color: "#fff",
+            cursor: "pointer"
+          }}
+        >
+          Search
+        </button>
+      </form>
 
+      {/* Map */}
       <MapContainer
-  center={[42.7, 25.3]}
-  zoom={8}
-  style={{
-    height: "100vh",
-    width: "100%",
-    zIndex: 1
-  }}
->
+        center={[42.7, 25.3]}
+        zoom={8}
+        style={{ height: "100vh", width: "100%" }}
+      >
         <TileLayer
           attribution="© OpenStreetMap"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -151,16 +284,20 @@ export default function Route() {
         {reservoirs2.map(r => (
           <Marker key={r.Име} position={r.position}>
             <Popup>
-              <strong>{r.Име}</strong><br />
-              Област: {r.Област}<br />
-              Басейнов район: {r["Басейнов район"]}
+              <strong>{r.Име}</strong>
+              <br />
+              Област: {r.Област}
             </Popup>
           </Marker>
         ))}
 
         {point && (
           <Marker position={[point.lat, point.lng]}>
-            <Popup>Entered address</Popup>
+            <Popup>
+              Въведеният адрес
+              <br />
+              Област: {cityOblast}
+            </Popup>
           </Marker>
         )}
 
@@ -169,32 +306,27 @@ export default function Route() {
             positions={routePath}
             color="blue"
             weight={4}
-            opacity={0.7}
           />
         )}
       </MapContainer>
 
-     {nearest && (
-  <div
-    style={{
-      ...panelStyle,
-      bottom: 30,
-      left: 20,
-      maxWidth: "260px",
-      lineHeight: 1.4
-    }}
-  >
-    <div style={{ fontWeight: 600, marginBottom: "6px" }}>
-      Reservoir
-    </div>
-
-    <div style={{ fontSize: "14px" }}>
-      <strong>{nearest.Име}</strong><br />
-      Distance: {nearest.dist.toFixed(1)} km
-    </div>
-  </div>
-)}
-
+      {/* Info panel */}
+      {nearest && (
+        <div
+          style={{
+            ...panelStyle,
+            bottom: 30,
+            left: 20,
+            maxWidth: "260px"
+          }}
+        >
+          <strong>{nearest.Име}</strong>
+          <br />
+          Област: {nearest.Област}
+          <br />
+          Разстояние: {nearest.dist.toFixed(1)} km
+        </div>
+      )}
     </>
   );
 }

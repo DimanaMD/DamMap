@@ -19,7 +19,6 @@ const Info = () => {
   const damDetails = damsData.find(d => d["Име"] === decodedName);
   const labelsBg = {
   volume: 'ОБЕМ',
-  percent: 'ПРОЦЕНТ',
   flow: 'ПРИЛИВ/ОТЛИВ',
 };
 
@@ -95,7 +94,7 @@ const Info = () => {
 
         <div style={styles.controlPanel}>
           <div style={styles.buttonGroup}>
-            {['volume', 'percent', 'flow'].map(type => (
+            {['volume', 'flow'].map(type => (
               <button 
                 key={type}
                 onClick={() => setActiveChart(type)}
@@ -138,12 +137,6 @@ const Info = () => {
             </ChartLayout>
           )}
 
-          {activeChart === "percent" && (
-            <ChartLayout data={filteredData} isPercent>
-              <Line yAxisId="left" type="monotone" dataKey="Наличен_процент" stroke={THEME.warning} strokeWidth={3} name="Наличен %" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разполагаем_процент" stroke={THEME.info} strokeWidth={2} name="Използваем %" dot={false} />
-            </ChartLayout>
-          )}
 
           {activeChart === "flow" && (
             <ChartLayout data={filteredData}>
