@@ -6,6 +6,7 @@ import damImg from "./assets/images/dam.jpg";
 import dam1 from "./assets/images/dam1.jpg";
 import dam2 from "./assets/images/dam2.jpg";
 import dam3 from "./assets/images/dam3.jpg";
+import Footer from "./Footer"
 
 import damsData from "./json/dams_data.json";
 
@@ -66,6 +67,7 @@ const HomePage = () => {
     ))}
     </div>
     </div>
+    <Footer/>
     </>
     
   );
