@@ -12,7 +12,6 @@ import L from "leaflet";
 import { reservoirs2 } from "./assets/Javascript/res.js";
 import { panelStyle } from "./assets/Javascript/infoStyles.js";
 
-/* ---------- Leaflet marker fix ---------- */
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -23,7 +22,6 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
 });
 
-/* ---------- Distance ---------- */
 function distance(a, b) {
   const R = 6371;
   const dLat = ((b.lat - a.lat) * Math.PI) / 180;
@@ -36,7 +34,7 @@ function distance(a, b) {
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
-/* ---------- OBLAST NORMALIZATION ---------- */
+
 const OBLAST_MAP = {
   "sofia": "софия",
   "sofia city": "софия",
@@ -79,7 +77,7 @@ function normalizeOblast(name) {
   return OBLAST_MAP[key] || key;
 }
 
-/* ---------- Reverse admin_level=6 ---------- */
+
 async function getOblastByAdminLevel(lat, lng) {
   const res = await fetch(
     `https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&addressdetails=1&lat=${lat}&lon=${lng}`
@@ -92,7 +90,7 @@ async function getOblastByAdminLevel(lat, lng) {
   );
 }
 
-/* ---------- Geocode full address ---------- */
+
 async function geocodeAddress(city, district, street) {
   const query = `${street}, ${district}, ${city}, Bulgaria`;
 
@@ -117,7 +115,7 @@ async function geocodeAddress(city, district, street) {
   };
 }
 
-/* ---------- Reservoir search ---------- */
+
 function expandOblastSearch(oblast) {
   if (oblast === "софия") {
     return ["софия", "софийска област"];
@@ -157,7 +155,7 @@ function findNearestReservoir(point) {
   }, null);
 }
 
-/* ---------- Routing ---------- */
+
 async function fetchRoute(start, end) {
   const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end[1]},${end[0]}?overview=full&geometries=geojson`;
   const res = await fetch(url);
@@ -171,7 +169,7 @@ async function fetchRoute(start, end) {
   ]);
 }
 
-/* ---------- Styles ---------- */
+
 const inputStyle = {
   width: "160px",
   padding: "8px 10px",
@@ -180,7 +178,7 @@ const inputStyle = {
   fontSize: "14px"
 };
 
-/* ---------- Component ---------- */
+
 export default function Route() {
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
@@ -194,36 +192,47 @@ export default function Route() {
   async function handleSearch(e) {
     e.preventDefault();
 
-    const location = await geocodeAddress(
-      city,
-      district,
-      street
-    );
+    const location = await geocodeAddress(city, district, street);
 
     if (!location) {
       alert("Адресът не беше намерен");
       return;
     }
 
-    const point = { lat: location.lat, lng: location.lng };
+    const pointPos = { lat: location.lat, lng: location.lng };
     setCityOblast(location.oblast);
 
-    const dam =
-      findReservoirByOblast(point, location.oblast) ||
-      findNearestReservoir(point);
+    let dam = null;
+    const normalizedCity = city.trim().toLowerCase();
 
-    setPoint(point);
+
+    if (normalizedCity === "варна" || normalizedCity === "бургас" || normalizedCity === "varna" || normalizedCity === "burgas") {
+      const kamchia = reservoirs2.find(r => r.Име === "Камчия");
+      if (kamchia) {
+
+        const d = distance(pointPos, {
+          lat: kamchia.position[0],
+          lng: kamchia.position[1]
+        });
+        dam = { ...kamchia, dist: d };
+      }
+    } 
+
+    
+    if (!dam) {
+      dam = findReservoirByOblast(pointPos, location.oblast) || findNearestReservoir(pointPos);
+    }
+
+    setPoint(pointPos);
     setNearest(dam);
 
-    const path = await fetchRoute(point, dam.position);
-    setRoutePath(
-      path || [[point.lat, point.lng], dam.position]
-    );
+    const path = await fetchRoute(pointPos, dam.position);
+    setRoutePath(path || [[pointPos.lat, pointPos.lng], dam.position]);
   }
 
   return (
     <>
-      {/* Search panel */}
+
       <form
         onSubmit={handleSearch}
         style={{
@@ -246,7 +255,6 @@ export default function Route() {
           value={district}
           onChange={e => setDistrict(e.target.value)}
           placeholder="Квартал"
-          required
           style={inputStyle}
         />
         <input
@@ -270,7 +278,7 @@ export default function Route() {
         </button>
       </form>
 
-      {/* Map */}
+
       <MapContainer
         center={[42.7, 25.3]}
         zoom={8}
