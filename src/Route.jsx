@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
@@ -12,14 +13,50 @@ import L from "leaflet";
 import { reservoirs2 } from "./assets/Javascript/res.js";
 import { panelStyle } from "./assets/Javascript/infoStyles.js";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+const svgIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40">
+  <defs>
+    <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.3)"/>
+  </filter>
+  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="url(#waterGradient)" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
+  <path d="M12 6.5C10.8 8.2 9.5 9.2 9.5 10.5C9.5 11.9 10.6 13 12 13C13.4 13 14.5 11.9 14.5 10.5C14.5 9.2 13.2 8.2 12 6.5Z" fill="#ffffff"/>
+</svg>
+`.trim();
+
+const modernIcon = new L.Icon({
+  iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgIcon)}`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 37],
+  popupAnchor: [0, -37]
+});
+
+const userSvgIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40">
+  <defs>
+    <linearGradient id="userGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b91c1c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.3)"/>
+  </filter>
+  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="url(#userGradient)" stroke="#ffffff" stroke-width="1.5" filter="url(#shadow)"/>
+  <circle cx="12" cy="9" r="3" fill="#ffffff"/>
+</svg>
+`.trim();
+
+const userIcon = new L.Icon({
+  iconUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(userSvgIcon)}`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 37],
+  popupAnchor: [0, -37]
 });
 
 function distance(a, b) {
@@ -171,11 +208,14 @@ async function fetchRoute(start, end) {
 
 
 const inputStyle = {
-  width: "160px",
-  padding: "8px 10px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-  fontSize: "14px"
+  width: "180px",
+  padding: "10px 14px",
+  borderRadius: "8px",
+  border: "1px solid #e2e8f0",
+  fontSize: "14px",
+  outline: "none",
+  transition: "border-color 0.2s",
+  backgroundColor: "#f8fafc"
 };
 
 
@@ -236,12 +276,23 @@ export default function Route() {
       <form
         onSubmit={handleSearch}
         style={{
-          ...panelStyle,
-          top: 103,
-          left: 680,
+          position: "absolute",
+          top: "100px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(8px)",
+          padding: "16px 24px",
+          borderRadius: "16px",
+          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
           display: "flex",
-          gap: "6px",
-          alignItems: "center"
+          gap: "12px",
+          alignItems: "center",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          width: "auto",
+          maxWidth: "90%"
         }}
       >
         <input
@@ -266,12 +317,14 @@ export default function Route() {
         />
         <button
           style={{
-            padding: "8px 14px",
-            borderRadius: "6px",
+            padding: "10px 20px",
+            borderRadius: "50px",
             border: "none",
-            background: "#2563eb",
+            background: "#0ea5e9",
             color: "#fff",
-            cursor: "pointer"
+            cursor: "pointer",
+            fontWeight: "600",
+            boxShadow: "0 4px 6px -1px rgba(14, 165, 233, 0.3)"
           }}
         >
           Search
@@ -282,29 +335,61 @@ export default function Route() {
       <MapContainer
         center={[42.7, 25.3]}
         zoom={8}
+        minZoom={8}
+        maxZoom={17}
+        scrollWheelZoom={true}
         style={{ height: "100vh", width: "100%" }}
       >
         <TileLayer
-          attribution="© OpenStreetMap"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {reservoirs2.map(r => (
-          <Marker key={r.Име} position={r.position}>
+          <Marker key={r.Име} position={r.position} icon={modernIcon}>
             <Popup>
-              <strong>{r.Име}</strong>
-              <br />
-              Област: {r.Област}
+              <div style={{ minWidth: "200px", fontFamily: "sans-serif" }}>
+                <h3 style={{ margin: "0 0 8px 0", color: "#0f172a", fontSize: "16px", borderBottom: "2px solid #e2e8f0", paddingBottom: "6px" }}>
+                  {r.Име}
+                </h3>
+                <div style={{ fontSize: "13px", color: "#334155", lineHeight: "1.6" }}>
+                  <div><strong style={{ color: "#64748b" }}>Област:</strong> {r.Област}</div>
+                </div>
+                <div style={{ marginTop: "12px", textAlign: "right" }}>
+                  <Link 
+                    to={`/info/${encodeURIComponent(r["Име"])}`}
+                    style={{
+                      display: "inline-block",
+                      backgroundColor: "#0ea5e9",
+                      color: "white",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      textDecoration: "none",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      transition: "background-color 0.2s",
+                      boxShadow: "0 2px 4px rgba(14, 165, 233, 0.3)"
+                    }}
+                  >
+                    Виж повече
+                  </Link>
+                </div>
+              </div>
             </Popup>
           </Marker>
         ))}
 
         {point && (
-          <Marker position={[point.lat, point.lng]}>
+          <Marker position={[point.lat, point.lng]} icon={userIcon}>
             <Popup>
-              Въведеният адрес
-              <br />
-              Област: {cityOblast}
+              <div style={{ minWidth: "180px", fontFamily: "sans-serif" }}>
+                <h3 style={{ margin: "0 0 8px 0", color: "#b91c1c", fontSize: "15px", borderBottom: "2px solid #fee2e2", paddingBottom: "6px" }}>
+                  Вашата локация
+                </h3>
+                <div style={{ fontSize: "13px", color: "#334155" }}>
+                  <strong>Област:</strong> {cityOblast || "Неизвестна"}
+                </div>
+              </div>
             </Popup>
           </Marker>
         )}
@@ -322,17 +407,26 @@ export default function Route() {
       {nearest && (
         <div
           style={{
-            ...panelStyle,
-            bottom: 30,
-            left: 20,
-            maxWidth: "260px"
+            position: "absolute",
+            bottom: "30px",
+            left: "20px",
+            zIndex: 1000,
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            maxWidth: "300px",
+            fontFamily: "sans-serif"
           }}
         >
-          <strong>{nearest.Име}</strong>
-          <br />
-          Област: {nearest.Област}
-          <br />
-          Разстояние: {nearest.dist.toFixed(1)} km
+          <h3 style={{ margin: "0 0 10px 0", color: "#0f172a", fontSize: "16px", borderBottom: "1px solid #e2e8f0", paddingBottom: "8px" }}>
+            Най-близък язовир
+          </h3>
+          <div style={{ fontSize: "14px", color: "#334155", lineHeight: "1.6" }}>
+            <div style={{ fontWeight: "bold", color: "#0ea5e9", fontSize: "1.1em" }}>{nearest.Име}</div>
+            <div><span style={{ color: "#64748b" }}>Област:</span> {nearest.Област}</div>
+            <div style={{ marginTop: "4px" }}><span style={{ color: "#64748b" }}>Разстояние:</span> <strong>{nearest.dist.toFixed(1)} km</strong></div>
+          </div>
         </div>
       )}
     </>
