@@ -117,42 +117,63 @@ const Info = () => {
   /* ---------- stats ---------- */
 
   const hasData = data.length > 0;
-  const isKokalyane = decodedName === "Кокаляне";
-  const deadVol = (hasData && !isKokalyane) ? data[0].Мъртъв_обем : 0;
-  const totalVol = (hasData && !isKokalyane) ? data[0].Общ_обем : 0;
-  const waterArea = damArea ? Number(damArea) : 0;
-
-  /* ---------- render ---------- */
+  const deadVol = hasData ? data[0].Мъртъв_обем : 0;
+  const totalVol = hasData ? data[0].Общ_обем : 0;
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header />
 
       <main style={{ ...styles.mainContent, flex: 1 }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px", width: "100%" }}>
+        
+        <header style={{ marginBottom: "2rem", display: "flex", alignItems: "center", gap: "16px" }}>
+          <button
+            onClick={() => navigate(-1)}
+            title="Назад"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              border: "1px solid #e2e8f0",
+              backgroundColor: "white",
+              color: "#64748b",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              flexShrink: 0
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.borderColor = "#cbd5e1";
+              e.currentTarget.style.color = "#334155";
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.borderColor = "#e2e8f0";
+              e.currentTarget.style.color = "#64748b";
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+            }}
+          >
+            <span className="material-icons" style={{ fontSize: "20px" }}>arrow_back</span>
+          </button>
 
-          {/* HEADER */}
-          <header style={{ marginBottom: "2rem", display: "flex", gap: "16px", alignItems: "center" }}>
-            <button onClick={() => navigate(-1)} style={navBackBtn}>
-              <span className="material-icons">arrow_back</span>
-            </button>
+          <div>
+            <h1 style={{ fontSize: "2.5rem", color: THEME.primary, margin: 0, lineHeight: 1.2 }}>
+              яз. {decodedName}
+            </h1>
 
-            <div>
-              <h1 style={{ fontSize: "2.5rem", color: THEME.primary, margin: 0 }}>
-                яз. {decodedName}
-                {(decodedName === "Овчарица" || decodedName === "Кокаляне" || decodedName === "Кърджали") && (
-                  <span style={{ fontSize: "1rem", color: "#ef4444", marginLeft: "12px", verticalAlign: "middle", fontWeight: "500" }}>
-                    (Няма налична информация освен посочената)
-                  </span>
-                )}
-              </h1>
-              {damDetails && (
-                <div style={{ color: THEME.textGray }}>
-                  {damDetails["Област"]} | {damDetails["Басейнов район"]}
-                </div>
-              )}
-            </div>
-          </header>
+            {damDetails && (
+              <div style={{ color: THEME.textGray, marginTop: "4px" }}>
+                {damDetails["Област"]} | {damDetails["Басейнов район"]}
+              </div>
+            )}
+          </div>
+        </header>
 
           {/* STATS */}
           {hasData && (
@@ -226,29 +247,63 @@ const Info = () => {
             )}
           </div>
 
-          {/* CHART */}
-          <div style={styles.chartWrapper}>
-            {!isKokalyane && activeChart === "обем" && (
-              <ChartLayout data={filteredData}>
-                {!(decodedName === "Въча" || decodedName === "Доспат") && (
-                  <Line dataKey="Наличен" stroke="#0ea5e9" strokeWidth={3} dot={false} />
-                )}
-                <Line dataKey="Разполагаем" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <ReferenceLine y={deadVol} stroke="#ef4444" strokeWidth={2} strokeDasharray="3 3" />
-              </ChartLayout>
-            )}
+        {/* 📈 CHARTS */}
+        <div style={styles.chartWrapper}>
+          {activeChart === "обем" && (
+            <ChartLayout data={filteredData} unit="m³">
+              <Line 
+                type="monotone" 
+                dataKey="Наличен" 
+                name="Наличен обем"
+                stroke="#0ea5e9" 
+                strokeWidth={3} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#0ea5e9" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Разполагаем" 
+                name="Разполагаем обем"
+                stroke="#cbd5e1" 
+                strokeWidth={2} 
+                strokeDasharray="5 5"
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
+              />
+              <ReferenceLine 
+                y={deadVol} 
+                stroke="#ef4444" 
+                strokeDasharray="3 3" 
+                label={{ value: "Мъртъв обем", position: "insideTopRight", fill: "#ef4444", fontSize: 12 }}
+              />
+            </ChartLayout>
+          )}
 
-            {!isKokalyane && activeChart === "прилив/отлив" && (
-              <ChartLayout data={filteredData}>
-                <Line dataKey="Приток" stroke="#10b981" strokeWidth={2} dot={false} />
-                <Line dataKey="Разход" stroke="#f59e0b" strokeWidth={2} dot={false} />
-              </ChartLayout>
-            )}
-          </div>
-
-          {/* DESCRIPTION */}
-          {damDescription && (
-            <section style={{
+          {activeChart === "прилив/отлив" && (
+            <ChartLayout data={filteredData} unit="m³">
+              <Line 
+                type="monotone" 
+                dataKey="Приток" 
+                stroke="#10b981" 
+                strokeWidth={2} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#10b981" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Разход" 
+                stroke="#f59e0b" 
+                strokeWidth={2} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#f59e0b" }}
+              />
+            </ChartLayout>
+          )}
+        </div>
+        
+        {damDescription && (
+          <section
+            style={{
               marginTop: "3rem",
               padding: "2rem",
               backgroundColor: THEME.white,
