@@ -47,9 +47,9 @@ const Footer = () => {
         <div>
           <h3 style={{ fontSize: "1rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "24px", color: "#e2e8f0" }}>Навигация</h3>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-            <li><Link to="/" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }}>Начало</Link></li>
-            <li><Link to="/Map" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }}>Карта</Link></li>
-            <li><Link to="/path" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }}>Маршрут</Link></li>
+            <li><Link to="/" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color = '#e2e8f0'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>Начало</Link></li>
+            <li><Link to="/Map" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color = '#e2e8f0'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>Карта</Link></li>
+            <li><Link to="/path" style={{ color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color = '#e2e8f0'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>Маршрут</Link></li>
           </ul>
         </div>
 
@@ -57,11 +57,21 @@ const Footer = () => {
         <div>
           <h3 style={{ fontSize: "1rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "24px", color: "#e2e8f0" }}>Контакти</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <a href="mailto:presian.dimitrov-26z@mgberon.com" style={{ color: "#94a3b8", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", fontSize: "0.9rem" }}>
+            <a 
+              href="mailto:presian.dimitrov-26z@mgberon.com" 
+              style={{ color: "#94a3b8", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", fontSize: "0.9rem", transition: "color 0.2s" }}
+              onMouseOver={e => e.currentTarget.style.color = '#e2e8f0'}
+              onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}
+            >
               <span className="material-icons" style={{ fontSize: "20px", color: "#0ea5e9" }}>email</span>
               presian.dimitrov-26z@mgberon.com
             </a>
-            <a href="mailto:dimana.dimitrova-26z@mgberon.com" style={{ color: "#94a3b8", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", fontSize: "0.9rem" }}>
+            <a 
+              href="mailto:dimana.dimitrova-26z@mgberon.com" 
+              style={{ color: "#94a3b8", textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", fontSize: "0.9rem", transition: "color 0.2s" }}
+              onMouseOver={e => e.currentTarget.style.color = '#e2e8f0'}
+              onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}
+            >
               <span className="material-icons" style={{ fontSize: "20px", color: "#0ea5e9" }}>email</span>
               dimana.dimitrova-26z@mgberon.com
             </a>

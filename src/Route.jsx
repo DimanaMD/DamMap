@@ -10,7 +10,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import { reservoirs2 } from "./assets/Javascript/res.js";
+import { reservoirs as allReservoirs, center } from "./assets/Javascript/res.js";
 import { panelStyle } from "./assets/Javascript/infoStyles.js";
 
 const svgIcon = `
@@ -58,6 +58,8 @@ const userIcon = new L.Icon({
   iconAnchor: [20, 37],
   popupAnchor: [0, -37]
 });
+
+const reservoirs = allReservoirs.filter(r => r["Предназначение"] === "за питейно-битово водоснабдяване");
 
 function distance(a, b) {
   const R = 6371;
@@ -163,7 +165,7 @@ function expandOblastSearch(oblast) {
 function findReservoirByOblast(point, oblast) {
   const oblasts = expandOblastSearch(oblast);
 
-  const candidates = reservoirs2.filter(r =>
+  const candidates = reservoirs.filter(r =>
     oblasts.includes(normalizeOblast(r.Област))
   );
 
@@ -181,7 +183,7 @@ function findReservoirByOblast(point, oblast) {
 }
 
 function findNearestReservoir(point) {
-  return reservoirs2.reduce((nearest, r) => {
+  return reservoirs.reduce((nearest, r) => {
     const d = distance(point, {
       lat: r.position[0],
       lng: r.position[1]
@@ -194,16 +196,21 @@ function findNearestReservoir(point) {
 
 
 async function fetchRoute(start, end) {
-  const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-  const res = await fetch(url);
-  const data = await res.json();
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
 
-  if (!data.routes?.length) return null;
+    if (!data.routes?.length) return null;
 
-  return data.routes[0].geometry.coordinates.map(c => [
-    c[1],
-    c[0]
-  ]);
+    return data.routes[0].geometry.coordinates.map(c => [
+      c[1],
+      c[0]
+    ]);
+  } catch (error) {
+    return null;
+  }
 }
 
 
@@ -247,7 +254,7 @@ export default function Route() {
 
 
     if (normalizedCity === "варна" || normalizedCity === "бургас" || normalizedCity === "varna" || normalizedCity === "burgas") {
-      const kamchia = reservoirs2.find(r => r.Име === "Камчия");
+      const kamchia = reservoirs.find(r => r.Име === "Камчия");
       if (kamchia) {
 
         const d = distance(pointPos, {
@@ -256,7 +263,16 @@ export default function Route() {
         });
         dam = { ...kamchia, dist: d };
       }
-    } 
+    } else if (normalizedCity === "софия" || normalizedCity === "sofia") {
+      const iskar = reservoirs.find(r => r.Име === "Искър");
+      if (iskar) {
+        const d = distance(pointPos, {
+          lat: iskar.position[0],
+          lng: iskar.position[1]
+        });
+        dam = { ...iskar, dist: d };
+      }
+    }
 
     
     if (!dam) {
@@ -333,7 +349,7 @@ export default function Route() {
 
 
       <MapContainer
-        center={[42.7, 25.3]}
+        center={center}
         zoom={8}
         minZoom={8}
         maxZoom={17}
@@ -345,7 +361,7 @@ export default function Route() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {reservoirs2.map(r => (
+        {reservoirs.map(r => (
           <Marker key={r.Име} position={r.position} icon={modernIcon}>
             <Popup>
               <div style={{ minWidth: "200px", fontFamily: "sans-serif" }}>
