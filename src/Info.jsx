@@ -180,8 +180,8 @@ const Info = () => {
             <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2rem" }}>
               <StatCard label="Общ обем" value={totalVol} color={THEME.primary} />
               <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} />
-              {waterArea > 0 && (
-                <StatCard label="Водна площ" value={waterArea} unit="km²" color={THEME.info} />
+              {damArea > 0 && (
+                <StatCard label="Водна площ" value={damArea} unit="km²" color={THEME.info} />
               )} 
             </div>
           )}
