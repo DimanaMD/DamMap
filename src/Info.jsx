@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
@@ -18,7 +18,6 @@ const monthNames = [
   "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
 ];
 
-/* ---------- component ---------- */
 
 const Info = () => {
   const { name } = useParams();
@@ -30,7 +29,6 @@ const Info = () => {
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("обем");
 
-  // 🗓 period state
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
@@ -114,7 +112,6 @@ const Info = () => {
     }
   };
 
-  /* ---------- stats ---------- */
 
   const hasData = data.length > 0;
   const deadVol = hasData ? data[0].Мъртъв_обем : 0;
@@ -186,10 +183,9 @@ const Info = () => {
             </div>
           )}
 
-          {/* CONTROLS */}
+
           <div style={styles.controlPanel}>
 
-            {/* CHART TYPE */}
             <div style={styles.buttonGroup}>
               {["обем", "прилив/отлив"].map(t => (
                 <button
@@ -206,7 +202,6 @@ const Info = () => {
               ))}
             </div>
 
-            {/* FILTER TYPE */}
             <div style={styles.buttonGroup}>
               {[
                 { l: "10 Дневно", v: "10" },
@@ -227,7 +222,6 @@ const Info = () => {
               ))}
             </div>
 
-            {/* PERIOD NAVIGATOR */}
             {filterType !== "10" && (
               <div style={periodNav}>
                 <button onClick={prevPeriod} style={periodBtn}>
@@ -247,7 +241,6 @@ const Info = () => {
             )}
           </div>
 
-        {/* 📈 CHARTS */}
         <div style={styles.chartWrapper}>
           {activeChart === "обем" && (
             <ChartLayout data={filteredData} unit="m³">
