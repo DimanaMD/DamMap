@@ -114,8 +114,8 @@ const Info = () => {
 
 
   const hasData = data.length > 0;
-  const deadVol = hasData ? data[0].Мъртъв_обем : 0;
-  const totalVol = hasData ? data[0].Общ_обем : 0;
+  const deadVol = damDetails?.["Мъртъв обем"] ?? (hasData ? data[0].Мъртъв_обем : 0);
+  const totalVol = damDetails?.["Общ обем"] ?? (hasData ? data[0].Общ_обем : 0);
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -243,7 +243,11 @@ const Info = () => {
 
         <div style={styles.chartWrapper}>
           {activeChart === "обем" && (
-            <ChartLayout data={filteredData} unit="m³">
+            <ChartLayout
+              data={filteredData}
+              unit="m³"
+              yDomain={[0, (dataMax) => Math.max(dataMax, totalVol) + 30]}
+            >
               <Line 
                 type="monotone" 
                 dataKey="Наличен" 
@@ -268,6 +272,12 @@ const Info = () => {
                 stroke="#ef4444" 
                 strokeDasharray="3 3" 
                 label={{ value: "Мъртъв обем", position: "insideTopRight", fill: "#ef4444", fontSize: 12 }}
+              />
+              <ReferenceLine
+                y={totalVol}
+                stroke="#22c55e"
+                strokeDasharray="3 3"
+                label={{ value: "Общ обем", position: "insideTopRight", fill: "#22c55e", fontSize: 12 }}
               />
             </ChartLayout>
           )}
@@ -336,13 +346,13 @@ const StatCard = ({ label, value, color, unit = "m³" }) => (
   </div>
 );
 
-const ChartLayout = ({ children, data }) => (
+const ChartLayout = ({ children, data, yDomain }) => (
   <div style={{ width: "100%", height: 450 }}>
     <ResponsiveContainer>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
-        <YAxis />
+        <YAxis domain={yDomain} />
         <Tooltip />
         <Legend />
         {children}
