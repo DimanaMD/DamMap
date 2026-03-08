@@ -704,7 +704,7 @@ const damDescriptions = {
 
 
 export default damDescriptions;
-const powerPlants = [
+export const powerPlants = [
             { name: "ПАВЕЦ „Чаира“", lat: 42.16238, lng: 23.87137, type: "ПАВЕЦ", capacity: 864 },
             { name: "ПАВЕЦ „Белмекен“", lat: 42.19966, lng: 23.85795, type: "ПАВЕЦ", capacity: 375 },
             { name: "ВЕЦ „Сестримо“", lat: 42.20856, lng: 23.91595, type: "ВЕЦ", capacity: 240 },

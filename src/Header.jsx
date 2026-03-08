@@ -67,6 +67,15 @@ const Header = () => {
           <span style={{ fontSize: "11px", fontWeight: "600", marginTop: "4px" }}>Карта</span>
         </Link>
         <Link 
+          to="/stations" 
+          style={getLinkStyle(path === "/stations")}
+          onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+        >
+          <span className="material-icons" style={{ fontSize: "24px" }}>electric_bolt</span>
+          <span style={{ fontSize: "11px", fontWeight: "600", marginTop: "4px" }}>Централи</span>
+        </Link>
+        <Link 
           to="/path" 
           style={getLinkStyle(path === "/path")}
           onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
