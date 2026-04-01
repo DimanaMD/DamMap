@@ -1,191 +1,427 @@
-import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
-} from 'recharts';
+} from "recharts";
 import Header from "./Header";
+import Footer from "./Footer";
 import { styles, THEME } from "./assets/Javascript/infoStyles";
-import damsData from "./json/dams_data.json"
+import damsData from "./json/dams_data.json";
+import damDescriptions from "./assets/Javascript/res";
+import {damAreas} from "./assets/Javascript/res.js";
+
+
+
+const monthNames = [
+  "Януари", "Февруари", "Март", "Април", "Май", "Юни",
+  "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"
+];
 
 
 const Info = () => {
   const { name } = useParams();
+  const navigate = useNavigate();
   const decodedName = decodeURIComponent(name);
+
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterType, setFilterType] = useState("10");
-  const [activeChart, setActiveChart] = useState("volume");
+  const [activeChart, setActiveChart] = useState("обем");
+  const [predictionDays, setPredictionDays] = useState(7);
+
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+
   const damDetails = damsData.find(d => d["Име"] === decodedName);
-  const labelsBg = {
-  volume: 'ОБЕМ',
-  percent: 'ПРОЦЕНТ',
-  flow: 'ПРИЛИВ/ОТЛИВ',
-};
+  const damDescription = damDescriptions[decodedName];
+  const damArea = damAreas.find(d => d.Име === decodedName)?.Площ;
+
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/dam/${decodedName}`)
       .then(res => res.json())
       .then(json => {
-        const formatted = json.map(row => ({
-          ...row,
-          date: row.date.split("T")[0],
+        const formatted = json.map(r => ({
+          ...r,
+          date: r.date.split("T")[0],
         }));
+
         setData(formatted);
-        applyFilter("10", formatted);
+
+        if (formatted.length) {
+          const lastDate = formatted[formatted.length - 1].date;
+          setSelectedYear(Number(lastDate.slice(0, 4)));
+          setSelectedMonth(Number(lastDate.slice(5, 7)) - 1);
+        }
       })
-      .catch(err => console.error('Fetch error:', err));
+      .catch(() => setData([]));
   }, [decodedName]);
 
-  const applyFilter = (type, fullData = data) => {
+  useEffect(() => {
+    if (!data.length) return;
+
     let filtered = [];
-    if (type === "10") filtered = fullData.filter((_, i) => i % 10 === 0);
-    else if (type === "month") {
-      let lastMonth = null;
-      filtered = fullData.filter(row => {
-        const m = new Date(row.date).getMonth();
-        if (m !== lastMonth) { lastMonth = m; return true; }
-        return false;
-      });
-    } else if (type === "year") {
-      let lastYear = null;
-      filtered = fullData.filter(row => {
-        const y = new Date(row.date).getFullYear();
-        if (y !== lastYear) { lastYear = y; return true; }
-        return false;
-      });
+
+    if (filterType === "10") {
+      filtered = data.filter((_, i) => i % 10 === 0);
     }
+
+    if (filterType === "month") {
+      const m = String(selectedMonth + 1).padStart(2, "0");
+      const prefix = `${selectedYear}-${m}`;
+      filtered = data.filter(d => d.date.startsWith(prefix));
+    }
+
+    if (filterType === "year") {
+      filtered = data.filter(d => d.date.startsWith(`${selectedYear}`));
+    }
+
     setFilteredData(filtered);
-    setFilterType(type);
+  }, [filterType, selectedMonth, selectedYear, data]);
+
+  /* ---------- navigation ---------- */
+
+  const prevPeriod = () => {
+    if (filterType === "month") {
+      if (selectedMonth === 0) {
+        setSelectedMonth(11);
+        setSelectedYear(y => y - 1);
+      } else {
+        setSelectedMonth(m => m - 1);
+      }
+    }
+    if (filterType === "year") {
+      setSelectedYear(y => y - 1);
+    }
   };
 
+  const nextPeriod = () => {
+    if (filterType === "month") {
+      if (selectedMonth === 11) {
+        setSelectedMonth(0);
+        setSelectedYear(y => y + 1);
+      } else {
+        setSelectedMonth(m => m + 1);
+      }
+    }
+    if (filterType === "year") {
+      setSelectedYear(y => y + 1);
+    }
+  };
+
+
   const hasData = data.length > 0;
-  const deadVol = hasData ? data[0].Мъртъв_обем : 0;
-  const totalVol = hasData ? data[0].Общ_обем : 0;
+  const deadVol = damDetails?.["Мъртъв обем"] ?? (hasData ? data[0].Мъртъв_обем : 0);
+  const totalVol = damDetails?.["Общ обем"] ?? (hasData ? data[0].Общ_обем : 0);
 
   return (
-    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-      <div style={styles.fixedHeader}>
-        <Header />
-      </div>
+    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Header />
 
-      <main style={styles.mainContent}>
-        <header style={{ marginBottom: "2rem" }}>
-  <h1 style={{ fontSize: "2.5rem", color: THEME.primary, marginBottom: "0.2rem" }}>
-    яз. {decodedName}
-  </h1>
-  
-  {damDetails && (
-    <div style={{ marginBottom: "0.5rem", fontSize: "1.1rem" }}>
-      <span style={{ color: THEME.primaryLight, fontWeight: "600" }}>{damDetails["Област"]}</span>
-      <span style={{ color: "#ccc", margin: "0 10px" }}>|</span>
-      <span style={{ color: THEME.textGray }}>{damDetails["Басейнов район"]}</span>
-    </div>
-  )}
+      <main style={{ ...styles.mainContent, flex: 1 }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 24px", width: "100%" }}>
+        
+        <header style={{ marginBottom: "2rem", display: "flex", alignItems: "center", gap: "16px" }}>
+          <button
+            onClick={() => navigate(-1)}
+            title="Назад"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              border: "1px solid #e2e8f0",
+              backgroundColor: "white",
+              color: "#64748b",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              flexShrink: 0
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.borderColor = "#cbd5e1";
+              e.currentTarget.style.color = "#334155";
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.borderColor = "#e2e8f0";
+              e.currentTarget.style.color = "#64748b";
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+            }}
+          >
+            <span className="material-icons" style={{ fontSize: "20px" }}>arrow_back</span>
+          </button>
 
-  <p style={{ color: THEME.textGray, marginTop: "0" }}>Исторически данни и статистически анализ</p>
-</header>
+          <div>
+            <h1 style={{ fontSize: "2.5rem", color: THEME.primary, margin: 0, lineHeight: 1.2 }}>
+              яз. {decodedName}
+            </h1>
 
-        {hasData && (
-          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
-            <StatCard label="Общ обем" value={totalVol} color={THEME.primary} />
-            <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} />
+            {damDetails && (
+              <div style={{ color: THEME.textGray, marginTop: "4px" }}>
+                {damDetails["Област"]} | {damDetails["Басейнов район"]}
+              </div>
+            )}
           </div>
-        )}
+        </header>
 
-        <div style={styles.controlPanel}>
-          <div style={styles.buttonGroup}>
-            {['volume', 'percent', 'flow'].map(type => (
-              <button 
-                key={type}
-                onClick={() => setActiveChart(type)}
+          {/* STATS */}
+          {hasData && (
+            <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+              <StatCard label="Общ обем" value={totalVol} color={THEME.primary} />
+              <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} />
+              {damArea > 0 && (
+                <StatCard label="Водна площ" value={damArea} unit="km²" color={THEME.info} />
+              )} 
+            </div>
+          )}
+
+
+          <div style={styles.controlPanel}>
+
+            <div style={styles.buttonGroup}>
+              {["обем", "прилив/отлив"].map(t => (
+                <button
+                  key={t}
+                  onClick={() => setActiveChart(t)}
+                  style={{
+                    ...styles.tabBtn,
+                    backgroundColor: activeChart === t ? THEME.primary : THEME.white,
+                    color: activeChart === t ? THEME.white : THEME.primary,
+                  }}
+                >
+                  {t.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            <div style={styles.buttonGroup}>
+              {[
+                { l: "10 Дневно", v: "10" },
+                { l: "Месечно", v: "month" },
+                { l: "Годишно", v: "year" }
+              ].map(f => (
+                <button
+                  key={f.v}
+                  onClick={() => setFilterType(f.v)}
+                  style={{
+                    ...styles.filterBtn,
+                    borderColor: filterType === f.v ? THEME.primary : "#ddd",
+                    color: filterType === f.v ? THEME.primary : THEME.textGray
+                  }}
+                >
+                  {f.l}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ ...styles.buttonGroup, display: "flex", alignItems: "center", gap: "8px", padding: "4px 12px" }}>
+              <select
+                value={predictionDays}
+                onChange={(e) => setPredictionDays(Number(e.target.value))}
                 style={{
-                  ...styles.tabBtn,
-                  backgroundColor: activeChart === type ? THEME.primary : THEME.white,
-                  color: activeChart === type ? THEME.white : THEME.primary,
+                  padding: "6px 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  backgroundColor: "white",
+                  color: THEME.textGray,
+                  outline: "none",
+                  cursor: "pointer",
+                  fontSize: "14px"
                 }}
               >
-                {labelsBg[type]}
-              </button>
-            ))}
-          </div>
-
-          <div style={styles.buttonGroup}>
-            {[{l: '10 Дни', v: '10'}, {l: 'Месечно', v: 'month'}, {l: 'Годишно', v: 'year'}].map(f => (
-              <button 
-                key={f.v}
-                onClick={() => applyFilter(f.v)}
+                {[...Array(20)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1} дни</option>
+                ))}
+              </select>
+              <button
+                onClick={() => {}}
                 style={{
                   ...styles.filterBtn,
-                  borderColor: filterType === f.v ? THEME.primary : "#ddd",
-                  color: filterType === f.v ? THEME.primary : THEME.textGray,
-                  fontWeight: filterType === f.v ? "600" : "400"
+                  backgroundColor: THEME.primary,
+                  color: "white",
+                  borderColor: THEME.primary
                 }}
               >
-                {f.l}
+                Прогнозирай
               </button>
-            ))}
+            </div>
+
+            {filterType !== "10" && (
+              <div style={periodNav}>
+                <button onClick={prevPeriod} style={periodBtn}>
+                  <span className="material-icons">chevron_left</span>
+                </button>
+
+                <div style={{ fontWeight: 600, color: THEME.primary }}>
+                  {filterType === "month"
+                    ? `${monthNames[selectedMonth]} ${selectedYear}`
+                    : selectedYear}
+                </div>
+
+                <button onClick={nextPeriod} style={periodBtn}>
+<span className="material-icons">chevron_right</span>
+                </button>
+              </div>
+            )}
           </div>
-        </div>
 
         <div style={styles.chartWrapper}>
-          {activeChart === "volume" && (
-            <ChartLayout data={filteredData}>
-              {}
-              <Line yAxisId="left" type="monotone" dataKey="Наличен" stroke={THEME.success} strokeWidth={3} name="Наличен обем" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разполагаем" stroke={THEME.primaryLight} strokeWidth={2} name="Използваем" dot={false} />
-              <ReferenceLine yAxisId="left" y={deadVol} stroke={THEME.danger} strokeDasharray="8 4" label={{ position: 'right', value: 'Dead Vol', fill: THEME.danger, fontSize: 12 }} />
+          {activeChart === "обем" && (
+            <ChartLayout
+              data={filteredData}
+              unit="m³"
+              yDomain={[0, (dataMax) => Math.max(dataMax, totalVol) + 30]}
+            >
+              <Line 
+                type="monotone" 
+                dataKey="Наличен" 
+                name="Наличен обем"
+                stroke="#0ea5e9" 
+                strokeWidth={3} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#0ea5e9" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Разполагаем" 
+                name="Разполагаем обем"
+                stroke="#cbd5e1" 
+                strokeWidth={2} 
+                strokeDasharray="5 5"
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
+              />
+              <ReferenceLine 
+                y={deadVol} 
+                stroke="#ef4444" 
+                strokeDasharray="3 3" 
+                label={{ value: "Мъртъв обем", position: "insideTopRight", fill: "#ef4444", fontSize: 12 }}
+              />
+              <ReferenceLine
+                y={totalVol}
+                stroke="#22c55e"
+                strokeDasharray="3 3"
+                label={{ value: "Общ обем", position: "insideTopRight", fill: "#22c55e", fontSize: 12 }}
+              />
             </ChartLayout>
           )}
 
-          {activeChart === "percent" && (
-            <ChartLayout data={filteredData} isPercent>
-              <Line yAxisId="left" type="monotone" dataKey="Наличен_процент" stroke={THEME.warning} strokeWidth={3} name="Наличен %" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разполагаем_процент" stroke={THEME.info} strokeWidth={2} name="Използваем %" dot={false} />
-            </ChartLayout>
-          )}
-
-          {activeChart === "flow" && (
-            <ChartLayout data={filteredData}>
-              <Line yAxisId="left" type="monotone" dataKey="Приток" stroke={THEME.success} strokeWidth={2} name="Прилив" dot={false} />
-              <Line yAxisId="left" type="monotone" dataKey="Разход" stroke={THEME.danger} strokeWidth={2} name="Отлив" dot={false} />
+          {activeChart === "прилив/отлив" && (
+            <ChartLayout data={filteredData} unit="m³">
+              <Line 
+                type="monotone" 
+                dataKey="Приток" 
+                stroke="#10b981" 
+                strokeWidth={2} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#10b981" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Разход" 
+                stroke="#f59e0b" 
+                strokeWidth={2} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#f59e0b" }}
+              />
             </ChartLayout>
           )}
         </div>
+        
+        {damDescription && (
+          <section
+            style={{
+              marginTop: "3rem",
+              padding: "2rem",
+              backgroundColor: THEME.white,
+              borderRadius: "14px",
+              boxShadow: THEME.shadow
+            }}>
+              <h2 style={{ color: THEME.primary }}>
+                За язовир „{decodedName}“
+              </h2>
+              <p style={{ whiteSpace: "pre-line" }}>{damDescription}</p>
+            </section>
+          )}
 
+        </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
 
-// --- Sub-Components ---
-const StatCard = ({ label, value, color }) => (
+/* ---------- helpers ---------- */
+
+const StatCard = ({ label, value, color, unit = "m³" }) => (
   <div style={{
     flex: "1 1 250px",
     padding: "1.5rem",
-    backgroundColor: THEME.white,
+    background: THEME.white,
     borderRadius: "12px",
     boxShadow: THEME.shadow,
     borderLeft: `6px solid ${color}`
   }}>
-    <div style={{ color: THEME.textGray, fontSize: "0.9rem", fontWeight: "600", marginBottom: "0.5rem" }}>{label}</div>
-    <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: THEME.primary }}>{value.toLocaleString()} <span style={{fontSize: '1rem'}}>m³</span></div>
+    <div style={{ color: THEME.textGray }}>{label}</div>
+    <div style={{ fontSize: "1.8rem", fontWeight: "bold" }}>
+      {value.toLocaleString()} {unit}
+    </div>
   </div>
 );
 
-const ChartLayout = ({ children, data, isPercent }) => (
+const ChartLayout = ({ children, data, yDomain }) => (
   <div style={{ width: "100%", height: 450 }}>
     <ResponsiveContainer>
-      <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-        <XAxis dataKey="date" tick={{fontSize: 12}} minTickGap={30} />
-        <YAxis yAxisId="left" tick={{fontSize: 12}} label={{ value: isPercent ? '%' : 'm³', angle: -90, position: 'insideLeft' }} />
-        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: THEME.shadow }} />
-        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis domain={yDomain} />
+        <Tooltip />
+        <Legend />
         {children}
       </LineChart>
     </ResponsiveContainer>
   </div>
 );
+
+/* ---------- styles ---------- */
+
+const periodNav = {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "8px 16px",
+  backgroundColor: THEME.white,
+  borderRadius: "12px",
+  border: "1px solid #e2e8f0"
+};
+
+const periodBtn = {
+  width: "36px",
+  height: "36px",
+  borderRadius: "50%",
+  border: "1px solid #e2e8f0",
+  background: "white",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center"
+};
+
+const navBackBtn = {
+  width: "40px",
+  height: "40px",
+  borderRadius: "50%",
+  border: "1px solid #e2e8f0",
+  background: "white",
+  cursor: "pointer"
+};
 
 export default Info;

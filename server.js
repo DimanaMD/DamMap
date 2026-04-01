@@ -30,7 +30,6 @@ app.get('/api/dam/:name', (req, res) => {
 
     const damId = damResult[0].id;
 
-    // 2️⃣ Взимаме всички записи от dam_his за този DamID
     const sqlData = `
       SELECT 
         Дата, 
