@@ -74,6 +74,21 @@ const Stations = () =>{
                             <strong style={{ color: "#64748b" }}>Мощност (MW):</strong> {plant.capacity}
                         </div>
                     )}
+                    {plant.typeDetailed && (
+                        <div>
+                            <strong style={{ color: "#64748b" }}>Подробен тип:</strong> {plant.typeDetailed}
+                        </div>
+                    )}
+                    {plant.dam && (
+                        <div>
+                            <strong style={{ color: "#64748b" }}>Язовир:</strong> {plant.dam}
+                        </div>
+                    )}
+                    {plant.river && (
+                        <div>
+                            <strong style={{ color: "#64748b" }}>Река:</strong> {plant.river}
+                        </div>
+                    )}
                 </div>
             </div>
         </Popup>

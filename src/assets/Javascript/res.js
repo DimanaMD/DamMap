@@ -705,26 +705,26 @@ const damDescriptions = {
 
 export default damDescriptions;
 export const powerPlants = [
-            { name: "ПАВЕЦ „Чаира“", lat: 42.16238, lng: 23.87137, type: "ПАВЕЦ", capacity: 864 },
-            { name: "ПАВЕЦ „Белмекен“", lat: 42.19966, lng: 23.85795, type: "ПАВЕЦ", capacity: 375 },
-            { name: "ВЕЦ „Сестримо“", lat: 42.20856, lng: 23.91595, type: "ВЕЦ", capacity: 240 },
-            { name: "ПАВЕЦ „Орфей“", lat: 41.94112, lng: 24.44753, type: "ПАВЕЦ", capacity: 160 },
-            { name: "ВЕЦ „Цанков камък“", lat: 41.83239, lng: 24.42136, type: "ВЕЦ", capacity: 80 },
-            { name: "ВЕЦ „Кричим“", lat: 42.02750, lng: 24.47107, type: "ВЕЦ", capacity: 80 },
-            { name: "ВЕЦ „Тешел“", lat: 41.66319, lng: 24.33985, type: "ВЕЦ", capacity: 60 },
-            { name: "ВЕЦ „Въча – 2“", lat: 41.99479, lng: 24.47100, type: "ВЕЦ", capacity: 7 },
-            { name: "ВЕЦ „Пещера“", lat: 42.01540, lng: 24.25940, type: "ВЕЦ", capacity: 128 },
-            { name: "ВЕЦ „Алеко“", lat: 42.11946, lng: 24.28888, type: "ВЕЦ", capacity: 66 },
-            { name: "ВЕЦ „Батак“", lat: 41.91937, lng: 24.19292, type: "ВЕЦ", capacity: 46 },
-            { name: "ВЕЦ „Кърджали“", lat: 41.6326, lng: 25.3383, type: "ВЕЦ", capacity: 106 },
-            { name: "ВЕЦ „Ивайловград“", lat: 41.53402, lng: 26.10743, type: "ВЕЦ", capacity: 104 },
-            { name: "ВЕЦ „Студен кладенец“", lat: 41.61231, lng: 25.64026, type: "ВЕЦ", capacity: 82 },
-            { name: "ВЕЦ „Пасарел“", lat: 42.54427, lng: 23.48624, type: "ВЕЦ", capacity: 26 },
-            { name: "ВЕЦ „Кокаляне“", lat: 42.58409, lng: 23.42829, type: "ВЕЦ", capacity: 22 },
-            { name: "ВЕЦ „Жребчево“", lat: 42.59230, lng: 25.95319, type: "ВЕЦ", capacity: 14 },
-            { name: "ВЕЦ „Копринка“", lat: 42.61257, lng: 25.31977, type: "ВЕЦ", capacity: 7 },
-            { name: "ВЕЦ „Огоста“", lat: 43.39945, lng: 23.21521, type: "ВЕЦ", capacity: 5 },
-            { name: "ВЕЦ „Тича“", lat: 43.09204, lng: 26.79574, type: "ВЕЦ", capacity: 0.8 },
-            { name: "ВЕЦ „Студена“", lat: 42.53424, lng: 23.14862, type: "ВЕЦ", capacity: 0.8 }
-        ];
+    { name: "ПАВЕЦ „Чаира“", lat: 42.16238, lng: 23.87137, type: "ПАВЕЦ", typeDetailed: "помпено-акумулираща", capacity: 864, dam: "Белмекен / Чаира", river: "Чаирска река" },
+    { name: "ПАВЕЦ „Белмекен“", lat: 42.19966, lng: 23.85795, type: "ПАВЕЦ", typeDetailed: "помпено-акумулираща", capacity: 375, dam: "Белмекен", river: "Марица (горно течение)" },
+    { name: "ВЕЦ „Сестримо“", lat: 42.20856, lng: 23.91595, type: "ВЕЦ", typeDetailed: "деривационна", capacity: 240, dam: "Белмекен (деривация)", river: "Марица" },
+    { name: "ПАВЕЦ „Орфей“", lat: 41.94112, lng: 24.44753, type: "ПАВЕЦ", typeDetailed: "помпено-акумулираща", capacity: 160, dam: "Кърджали", river: "Арда" },
+    { name: "ВЕЦ „Цанков камък“", lat: 41.83239, lng: 24.42136, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 80, dam: "Цанков камък", river: "Въча" },
+    { name: "ВЕЦ „Кричим“", lat: 42.02750, lng: 24.47107, type: "ВЕЦ", typeDetailed: "язовирна/изравнител", capacity: 80, dam: "Кричим", river: "Въча" },
+    { name: "ВЕЦ „Тешел“", lat: 41.66319, lng: 24.33985, type: "ВЕЦ", typeDetailed: "деривационна", capacity: 60, dam: "Тешел", river: "Въча" },
+    { name: "ВЕЦ „Въча – 2“", lat: 41.99479, lng: 24.47100, type: "ВЕЦ", typeDetailed: "деривационна", capacity: 7, dam: "Въча", river: "Въча" },
+    { name: "ВЕЦ „Пещера“", lat: 42.01540, lng: 24.25940, type: "ВЕЦ", typeDetailed: "деривационна", capacity: 128, dam: "Батак", river: "Стара река / Въча" },
+    { name: "ВЕЦ „Алеко“", lat: 42.11946, lng: 24.28888, type: "ВЕЦ", typeDetailed: "деривационна", capacity: 66, dam: "Батак", river: "Стара река" },
+    { name: "ВЕЦ „Батак“", lat: 41.91937, lng: 24.19292, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 46, dam: "Батак", river: "Мътница" },
+    { name: "ВЕЦ „Кърджали“", lat: 41.6326, lng: 25.3383, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 106, dam: "Кърджали", river: "Арда" },
+    { name: "ВЕЦ „Ивайловград“", lat: 41.53402, lng: 26.10743, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 104, dam: "Ивайловград", river: "Арда" },
+    { name: "ВЕЦ „Студен кладенец“", lat: 41.61231, lng: 25.64026, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 82, dam: "Студен кладенец", river: "Арда" },
+    { name: "ВЕЦ „Пасарел“", lat: 42.54427, lng: 23.48624, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 26, dam: "Пасарел", river: "Искър" },
+    { name: "ВЕЦ „Кокаляне“", lat: 42.58409, lng: 23.42829, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 22, dam: "Панчарево", river: "Искър" },
+    { name: "ВЕЦ „Жребчево“", lat: 42.59230, lng: 25.95319, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 14, dam: "Жребчево", river: "Тунджа" },
+    { name: "ВЕЦ „Копринка“", lat: 42.61257, lng: 25.31977, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 7, dam: "Копринка", river: "Тунджа" },
+    { name: "ВЕЦ „Огоста“", lat: 43.39945, lng: 23.21521, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 5, dam: "Огоста", river: "Огоста" },
+    { name: "ВЕЦ „Тича“", lat: 43.09204, lng: 26.79574, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 0.8, dam: "Тича", river: "Тича" },
+    { name: "ВЕЦ „Студена“", lat: 42.53424, lng: 23.14862, type: "ВЕЦ", typeDetailed: "язовирна", capacity: 0.8, dam: "Студена", river: "Струма" }
+];
 

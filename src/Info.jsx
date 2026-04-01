@@ -28,6 +28,7 @@ const Info = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("обем");
+  const [predictionDays, setPredictionDays] = useState(7);
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -36,7 +37,6 @@ const Info = () => {
   const damDescription = damDescriptions[decodedName];
   const damArea = damAreas.find(d => d.Име === decodedName)?.Площ;
 
-  /* ---------- data fetch ---------- */
 
   useEffect(() => {
     fetch(`http://localhost:5000/api/dam/${decodedName}`)
@@ -57,8 +57,6 @@ const Info = () => {
       })
       .catch(() => setData([]));
   }, [decodedName]);
-
-  /* ---------- filtering ---------- */
 
   useEffect(() => {
     if (!data.length) return;
@@ -220,6 +218,38 @@ const Info = () => {
                   {f.l}
                 </button>
               ))}
+            </div>
+
+            <div style={{ ...styles.buttonGroup, display: "flex", alignItems: "center", gap: "8px", padding: "4px 12px" }}>
+              <select
+                value={predictionDays}
+                onChange={(e) => setPredictionDays(Number(e.target.value))}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: "8px",
+                  border: "1px solid #e2e8f0",
+                  backgroundColor: "white",
+                  color: THEME.textGray,
+                  outline: "none",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                {[...Array(20)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1} дни</option>
+                ))}
+              </select>
+              <button
+                onClick={() => {}}
+                style={{
+                  ...styles.filterBtn,
+                  backgroundColor: THEME.primary,
+                  color: "white",
+                  borderColor: THEME.primary
+                }}
+              >
+                Прогнозирай
+              </button>
             </div>
 
             {filterType !== "10" && (
