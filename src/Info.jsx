@@ -29,6 +29,8 @@ const Info = () => {
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("обем");
   const [predictionDays, setPredictionDays] = useState(7);
+  const [predictionData, setPredictionData] = useState([]);
+  const [isPredicting, setIsPredicting] = useState(false);
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -80,6 +82,26 @@ const Info = () => {
     setFilteredData(filtered);
   }, [filterType, selectedMonth, selectedYear, data]);
 
+  const handlePredict = async () => {
+    setIsPredicting(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: decodedName, 
+          days: predictionDays 
+        })
+      });
+      const json = await response.json();
+      setPredictionData(json);
+    } catch (error) {
+      console.error("Грешка при прогнозиране:", error);
+    } finally {
+      setIsPredicting(false);
+    }
+  };
+
   /* ---------- navigation ---------- */
 
   const prevPeriod = () => {
@@ -114,6 +136,8 @@ const Info = () => {
   const hasData = data.length > 0;
   const deadVol = damDetails?.["Мъртъв обем"] ?? (hasData ? data[0].Мъртъв_обем : 0);
   const totalVol = damDetails?.["Общ обем"] ?? (hasData ? data[0].Общ_обем : 0);
+
+  const combinedChartData = [...filteredData, ...predictionData];
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -240,15 +264,17 @@ const Info = () => {
                 ))}
               </select>
               <button
-                onClick={() => {}}
+                onClick={handlePredict}
+                disabled={isPredicting}
                 style={{
                   ...styles.filterBtn,
-                  backgroundColor: THEME.primary,
+                  backgroundColor: isPredicting ? "#94a3b8" : THEME.primary,
                   color: "white",
-                  borderColor: THEME.primary
+                  borderColor: isPredicting ? "#94a3b8" : THEME.primary,
+                  cursor: isPredicting ? "not-allowed" : "pointer"
                 }}
               >
-                Прогнозирай
+                {isPredicting ? "Зареждане..." : "Прогнозирай"}
               </button>
             </div>
 
@@ -274,7 +300,7 @@ const Info = () => {
         <div style={styles.chartWrapper}>
           {activeChart === "обем" && (
             <ChartLayout
-              data={filteredData}
+              data={combinedChartData}
               unit="m³"
               yDomain={[0, (dataMax) => Math.max(dataMax, totalVol) + 30]}
             >
@@ -297,6 +323,16 @@ const Info = () => {
                 dot={false} 
                 activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
               />
+              {predictionData.length > 0 && (
+                <Line 
+                  type="monotone" 
+                  dataKey="prediction" 
+                  name="Прогноза (AI)"
+                  stroke="#ef4444" 
+                  strokeWidth={2} 
+                  strokeDasharray="5 5"
+                />
+              )}
               <ReferenceLine 
                 y={deadVol} 
                 stroke="#ef4444" 
