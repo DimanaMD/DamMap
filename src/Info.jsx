@@ -8,7 +8,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { styles, THEME } from "./assets/Javascript/infoStyles";
 import damsData from "./json/dams_data.json";
-import damDescriptions from "./assets/Javascript/res";
+import damDescriptions, { reservoirs } from "./assets/Javascript/res";
 import {damAreas} from "./assets/Javascript/res.js";
 
 
@@ -82,25 +82,39 @@ const Info = () => {
     setFilteredData(filtered);
   }, [filterType, selectedMonth, selectedYear, data]);
 
-  const handlePredict = async () => {
+ const handlePredict = async () => {
+    const resInfo = reservoirs.find(r => r["Име"] === decodedName);
+    
+    if (!resInfo || !resInfo.position) {
+        alert("Липсват координати за този язовир!");
+        return;
+    }
+
     setIsPredicting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: decodedName, 
-          days: predictionDays 
-        })
-      });
-      const json = await response.json();
-      setPredictionData(json);
+        const response = await fetch(`http://localhost:5000/api/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name: decodedName, 
+                days: predictionDays,
+                cords: resInfo.position // Увери се, че това е [lat, lon]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Сървърна грешка: ${response.status}`);
+        }
+
+        const json = await response.json();
+        setPredictionData(json);
     } catch (error) {
-      console.error("Грешка при прогнозиране:", error);
+        console.error("Грешка при прогнозиране:", error);
+        alert("Сървърът се забави твърде много или възникна грешка. Проверете конзолата на Python.");
     } finally {
-      setIsPredicting(false);
+        setIsPredicting(false);
     }
-  };
+};
 
   /* ---------- navigation ---------- */
 
