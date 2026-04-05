@@ -35,6 +35,14 @@ const Info = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const damDetails = damsData.find(d => d["Име"] === decodedName);
   const damDescription = damDescriptions[decodedName];
   const damArea = damAreas.find(d => d.Име === decodedName)?.Площ;
@@ -210,15 +218,15 @@ const Info = () => {
 
           {/* STATS */}
           {hasData && (
-            <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2rem" }}>
-              <StatCard label="Общ обем" value={totalVol} color={THEME.primary} />
-              <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} />
+            <div style={{ display: "flex", gap: isMobile ? "1rem" : "1.5rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+              <StatCard label="Общ обем" value={totalVol} color={THEME.primary} isMobile={isMobile} />
+              <StatCard label="Мъртъв обем" value={deadVol} color={THEME.danger} isMobile={isMobile} />
               {damArea > 0 && (
-                <StatCard label="Водна площ" value={damArea} unit="km²" color={THEME.info} />
+                <StatCard label="Водна площ" value={damArea} unit="km²" color={THEME.info} isMobile={isMobile} />
               )} 
             </div>
           )}
-          <div style={styles.controlPanel}>
+          <div style={{ ...styles.controlPanel, flexWrap: "wrap", justifyContent: "center", gap: "16px" }}>
 
             <div style={styles.buttonGroup}>
               {["обем", "прилив/отлив"].map(t => (
@@ -256,7 +264,7 @@ const Info = () => {
               ))}
             </div>
 
-            <div style={{ ...styles.buttonGroup, display: "flex", alignItems: "center", gap: "8px", padding: "4px 12px" }}>
+            <div style={{ ...styles.buttonGroup, display: "flex", alignItems: "center", gap: "8px", padding: "4px 12px", width: isMobile ? "100%" : "auto", justifyContent: "center" }}>
               <select
                 value={predictionDays}
                 onChange={(e) => setPredictionDays(Number(e.target.value))}
@@ -314,6 +322,7 @@ const Info = () => {
             <ChartLayout
               data={combinedChartData}
               unit="m³"
+              isMobile={isMobile}
               yDomain={[0, (dataMax) => Math.round(Math.max(dataMax, totalVol) + dataMax*0.05)]}
             >
               <Line 
@@ -339,7 +348,7 @@ const Info = () => {
                 <Line 
                   type="monotone" 
                   dataKey="prediction" 
-                  name="Прогноза (AI)"
+                  name="Прогноза (Разполагаем обем)"
                   stroke="#ef4444"          // Ярко червено
                   strokeWidth={4}           // Малко по-дебела за акцент
                   strokeDasharray="8 5"     // По-дълги прекъсвания за модерен вид
@@ -366,7 +375,7 @@ const Info = () => {
           )}
 
           {activeChart === "прилив/отлив" && (
-            <ChartLayout data={filteredData} unit="m³">
+            <ChartLayout data={filteredData} unit="m³" isMobile={isMobile}>
               <Line 
                 type="monotone" 
                 dataKey="Приток" 
@@ -413,24 +422,24 @@ const Info = () => {
 
 /* ---------- helpers ---------- */
 
-const StatCard = ({ label, value, color, unit = "m³" }) => (
+const StatCard = ({ label, value, color, unit = "m³", isMobile }) => (
   <div style={{
-    flex: "1 1 250px",
-    padding: "1.5rem",
+    flex: isMobile ? "1 1 calc(50% - 1rem)" : "1 1 250px",
+    padding: isMobile ? "1rem" : "1.5rem",
     background: THEME.white,
     borderRadius: "12px",
     boxShadow: THEME.shadow,
     borderLeft: `6px solid ${color}`
   }}>
     <div style={{ color: THEME.textGray }}>{label}</div>
-    <div style={{ fontSize: "1.8rem", fontWeight: "bold" }}>
+    <div style={{ fontSize: isMobile ? "1.4rem" : "1.8rem", fontWeight: "bold" }}>
       {value.toLocaleString()} {unit}
     </div>
   </div>
 );
 
-const ChartLayout = ({ children, data, yDomain }) => (
-  <div style={{ width: "100%", height: 450 }}>
+const ChartLayout = ({ children, data, yDomain, isMobile }) => (
+  <div style={{ width: "100%", height: isMobile ? 300 : 450 }}>
     <ResponsiveContainer>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
@@ -438,9 +447,8 @@ const ChartLayout = ({ children, data, yDomain }) => (
         <YAxis domain={yDomain} />
         <Tooltip 
   formatter={(value, name, props) => {
-    // Проверяваме дали името на линията е "Прогноза (AI)" 
-    // или дали в данните на точката съществува ключ 'prediction'
-    if (name === "Прогноза (AI)" || props.payload.prediction !== undefined) {
+
+    if (name === "Прогноза (Разполагаем обем)" || props.payload.prediction !== undefined) {
       return [Number(value).toFixed(3) + " m³", name];
     }
     

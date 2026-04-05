@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -40,13 +41,22 @@ function getReservoirIcon(purpose) {
 }
 
 const MapView = () => {
-    
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <>
       <div style={{
         position: "fixed",
-        top: "100px",
-        right: "20px",
+        top: isMobile ? "auto" : "100px",
+        bottom: isMobile ? "20px" : "auto",
+        right: isMobile ? "50%" : "20px",
+        transform: isMobile ? "translateX(50%)" : "none",
         zIndex: 1000,
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(4px)",
@@ -54,22 +64,25 @@ const MapView = () => {
         borderRadius: "12px",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
         fontFamily: "sans-serif",
-        minWidth: "200px",
-        border: "1px solid #e2e8f0"
-        
+        minWidth: isMobile ? "90%" : "200px",
+        border: "1px solid #e2e8f0",
+        display: isMobile ? "flex" : "block",
+        flexDirection: "column"
       }}>
-        <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", fontWeight: "600", color: "#0f172a" }}>Предназначение</h3>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+        <h3 style={{ margin: isMobile ? "0 0 8px 0" : "0 0 12px 0", fontSize: "14px", fontWeight: "600", color: "#0f172a", textAlign: isMobile ? "center" : "left" }}>Предназначение</h3>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? "0" : "8px" }}>
           <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "linear-gradient(to bottom, #38bdf8, #0284c7)", marginRight: "10px", boxShadow: "0 0 0 1px rgba(56, 189, 248, 0.3)" }}></div>
           <span style={{ fontSize: "13px", color: "#334155" }}>Питейно-битово</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? "0" : "8px" }}>
           <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "linear-gradient(to bottom, #f87171, #dc2626)", marginRight: "10px", boxShadow: "0 0 0 1px rgba(248, 113, 113, 0.3)" }}></div>
           <span style={{ fontSize: "13px", color: "#334155" }}>Енергетика</span>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "linear-gradient(to bottom, #4ade80, #16a34a)", marginRight: "10px", boxShadow: "0 0 0 1px rgba(74, 222, 128, 0.3)" }}></div>
           <span style={{ fontSize: "13px", color: "#334155" }}>Напояване</span>
+        </div>
         </div>
       </div>
       <MapContainer 
