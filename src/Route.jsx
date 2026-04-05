@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   MapContainer,
@@ -213,7 +213,8 @@ async function fetchRoute(start, end) {
 
 
 const inputStyle = {
-  width: "180px",
+  flex: "1 1 200px",
+  minWidth: "140px",
   padding: "10px 14px",
   borderRadius: "8px",
   border: "1px solid #e2e8f0",
@@ -233,6 +234,14 @@ export default function Route() {
   const [nearest, setNearest] = useState(null);
   const [routePath, setRoutePath] = useState([]);
   const [cityOblast, setCityOblast] = useState("");
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   async function handleSearch(e) {
     e.preventDefault();
@@ -291,13 +300,13 @@ export default function Route() {
         onSubmit={handleSearch}
         style={{
           position: "absolute",
-          top: "100px",
+          top: isMobile ? "90px" : "100px",
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 1000,
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(8px)",
-          padding: "16px 24px",
+          padding: isMobile ? "12px" : "16px 24px",
           borderRadius: "16px",
           boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
           display: "flex",
@@ -305,8 +314,8 @@ export default function Route() {
           alignItems: "center",
           flexWrap: "wrap",
           justifyContent: "center",
-          width: "auto",
-          maxWidth: "90%"
+          width: isMobile ? "95%" : "auto",
+          maxWidth: isMobile ? "none" : "90%"
         }}
       >
         <input
@@ -429,7 +438,8 @@ export default function Route() {
             padding: "20px",
             borderRadius: "12px",
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            maxWidth: "300px",
+            maxWidth: isMobile ? "calc(100% - 40px)" : "300px",
+            right: isMobile ? "20px" : "auto",
             fontFamily: "sans-serif"
           }}
         >
