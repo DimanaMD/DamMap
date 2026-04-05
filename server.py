@@ -8,11 +8,11 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 from datetime import datetime
+from waitress import serve
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# --- GLOBAL WEATHER SETUP (Initialized once on startup) ---
 cache_session = requests_cache.CachedSession('.cache', expire_after=-1)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
@@ -25,7 +25,6 @@ def get_db_connection():
         database="dams_db"
     )
 
-# --- ROUTE 1: HISTORICAL DATA (From your original server.py) ---
 @app.route('/api/dam/<name>', methods=['GET'])
 def get_dam_data(name):
     db = get_db_connection()
@@ -37,11 +36,14 @@ def get_dam_data(name):
     if not dam:
         return jsonify({"error": "Язовирът не е намерен."}), 404
 
+    
+
     sql = """
         SELECT Дата, Общ_обем, Мъртъв_обем, Наличен, 
                Наличен_процент, Разполагаем, Разполагаем_процент, 
                Приток, Разход 
-        FROM dam_his WHERE DamID = %s ORDER BY Дата ASC
+        FROM dam_his WHERE DamID = %s 
+        ORDER BY Дата ASC
     """
     cursor.execute(sql, (dam['id'],))
     results = cursor.fetchall()
@@ -64,7 +66,6 @@ def get_dam_data(name):
     db.close()
     return jsonify(formatted)
 
-# --- ROUTE 2: FORECAST LOGIC (From your original forecast.py) ---
 @app.route('/api/predict', methods=['POST'])
 def predict():
     req_data = request.get_json()
@@ -80,8 +81,6 @@ def predict():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Dynamic lookup for ID and Metadata
-    # 1. Вземаме само ID-то от dam_perm
     id_query = "SELECT id FROM dam_perm WHERE Име = %s LIMIT 1"
     cursor.execute(id_query, (dam_name,))
     result = cursor.fetchone()
@@ -90,10 +89,9 @@ def predict():
         conn.close()
         return jsonify({"error": "Язовирът не е намерен в dam_perm"}), 404
 
-    dam_id = result[0] # Тук вземаме id-то (index 0)
+    dam_id = result[0]
 
-    # 2. Вземаме Общ и Мъртъв обем от dam_his за конкретна дата (напр. 2022-02-02)
-    # Използваме обратни апострофи `, ако имената в базата имат интервали
+    #Borders
     vol_query = """
         SELECT `Общ_обем`, `Мъртъв_обем` 
         FROM dam_his 
@@ -116,7 +114,7 @@ def predict():
         conn.close()
         return jsonify({"error": "Dam not found in dam_perm"}), 404
 
-    # Spatial Weather Logic
+    # Weather
     def get_spatial_weather(lat, lon):
         lats = [lat, lat + OFFSET, lat - OFFSET, lat, lat]
         lons = [lon, lon, lon, lon + OFFSET, lon - OFFSET]
@@ -146,7 +144,7 @@ def predict():
 
     df_weather_all = get_spatial_weather(LAT, LON)
 
-    # Training Data Prep
+    # Past Data
     query = "SELECT Дата as ds, Разполагаем as y, Приток as inflow, Разход as outflow FROM dam_his WHERE DamId = %s"
     df_train = pd.read_sql(query, conn, params=(dam_id,))
     
@@ -160,7 +158,7 @@ def predict():
     df_train['inflow_state_lagged'] = df_train['inflow_state'].shift(LAG_DAYS).fillna(0)
     df_train['cap'], df_train['floor'] = DAM_CAPACITY, DAM_FLOOR
 
-    # Prophet Model (Parameters preserved)
+    # Prophet and fine tuning
     m = Prophet(growth='logistic', seasonality_mode='multiplicative', changepoint_prior_scale=6, seasonality_prior_scale=2.0, yearly_seasonality=False)
     m.add_seasonality(name='yearly', period=365.25, fourier_order=12) 
     m.add_regressor('rain_lagged')
@@ -168,7 +166,7 @@ def predict():
     m.add_regressor('outflow_state')
     m.fit(df_train)
 
-    # Future Prediction
+    # F Prediction
     last_real_value = df_train['y'].iloc[-1]
     check_last_point = m.predict(df_train.tail(1))
     bias = last_real_value - check_last_point['yhat'].iloc[0]
@@ -193,5 +191,5 @@ def predict():
     return jsonify(forecast_final.to_dict(orient='records'))
 
 if __name__ == '__main__':
-    # Running on port 5000 - make sure React fetch points to 5000
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("Serving production at http://0.0.0.0:5000")
+    serve(app, host='0.0.0.0', port=5000)

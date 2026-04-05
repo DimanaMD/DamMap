@@ -145,12 +145,12 @@ const Info = () => {
       setSelectedYear(y => y + 1);
     }
   };
-
-
   const hasData = data.length > 0;
   const deadVol = damDetails?.["Мъртъв обем"] ?? (hasData ? data[0].Мъртъв_обем : 0);
   const totalVol = damDetails?.["Общ обем"] ?? (hasData ? data[0].Общ_обем : 0);
-
+  const predictionGlow = {
+    filter: "drop-shadow(0px 0px 6px rgba(239, 68, 68, 0.6))"
+  };
   const combinedChartData = [...filteredData, ...predictionData];
 
   return (
@@ -218,8 +218,6 @@ const Info = () => {
               )} 
             </div>
           )}
-
-
           <div style={styles.controlPanel}>
 
             <div style={styles.buttonGroup}>
@@ -316,7 +314,7 @@ const Info = () => {
             <ChartLayout
               data={combinedChartData}
               unit="m³"
-              yDomain={[0, (dataMax) => Math.max(dataMax, totalVol) + 30]}
+              yDomain={[0, (dataMax) => Math.round(Math.max(dataMax, totalVol) + dataMax*0.05)]}
             >
               <Line 
                 type="monotone" 
@@ -337,14 +335,19 @@ const Info = () => {
                 dot={false} 
                 activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
               />
-              {predictionData.length > 0 && (
+             {predictionData.length > 0 && (
                 <Line 
                   type="monotone" 
                   dataKey="prediction" 
                   name="Прогноза (AI)"
-                  stroke="#ef4444" 
-                  strokeWidth={2} 
-                  strokeDasharray="5 5"
+                  stroke="#ef4444"          // Ярко червено
+                  strokeWidth={4}           // Малко по-дебела за акцент
+                  strokeDasharray="8 5"     // По-дълги прекъсвания за модерен вид
+                  dot={{ r: 4, fill: "#ef4444", strokeWidth: 0 }} // Точки само на прогнозата
+                  activeDot={{ r: 8, strokeWidth: 0, fill: "#ef4444" }}
+                  style={predictionGlow}    // Добавяме сиянието
+                  connectNulls={true}       // Свързва историческата линия с прогнозата
+                  animationDuration={2000}  // Плавно рисуване
                 />
               )}
               <ReferenceLine 
@@ -433,7 +436,21 @@ const ChartLayout = ({ children, data, yDomain }) => (
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
         <YAxis domain={yDomain} />
-        <Tooltip />
+        <Tooltip 
+  formatter={(value, name, props) => {
+    // Проверяваме дали името на линията е "Прогноза (AI)" 
+    // или дали в данните на точката съществува ключ 'prediction'
+    if (name === "Прогноза (AI)" || props.payload.prediction !== undefined) {
+      return [Number(value).toFixed(3) + " m³", name];
+    }
+    
+    // За всички останали линии (Наличен обем, Приток и т.н.) 
+    // показваме стандартно закръгляне или оригиналната стойност
+    return [value.toLocaleString() + " m³", name];
+  }} 
+  labelStyle={{ color: THEME.primary, fontWeight: "bold" }}
+  contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
+/>
         <Legend />
         {children}
       </LineChart>
