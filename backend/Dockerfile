@@ -39,19 +39,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libmariadb3 \
  && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user to run the application
-RUN addgroup --system --gid 1001 appgroup \
- && adduser  --system --uid 1001 --ingroup appgroup appuser
-
 # Copy the pre-built virtual environment and application source from the builder.
-COPY --from=builder --chown=appuser:appgroup /app/.venv      ./.venv
-COPY --from=builder --chown=appuser:appgroup /app/pyproject.toml ./pyproject.toml
-COPY --from=builder --chown=appuser:appgroup /app        ./app
+COPY --from=builder /app/.venv      ./.venv
+COPY --from=builder /app/pyproject.toml ./pyproject.toml
+COPY --from=builder /app        ./app
 
 # Pre-create the data directory with the correct ownership
-RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
-
-USER appuser
+RUN mkdir -p /app/data
 
 EXPOSE 8000
 
