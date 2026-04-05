@@ -46,7 +46,7 @@ RUN addgroup --system --gid 1001 appgroup \
 # Copy the pre-built virtual environment and application source from the builder.
 COPY --from=builder --chown=appuser:appgroup /app/.venv      ./.venv
 COPY --from=builder --chown=appuser:appgroup /app/pyproject.toml ./pyproject.toml
-COPY --from=builder --chown=appuser:appgroup /        ./app
+COPY --from=builder --chown=appuser:appgroup /app        ./app
 
 # Pre-create the data directory with the correct ownership
 RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
@@ -58,4 +58,4 @@ EXPOSE 8000
 # Prepend the venv's bin directory so python & all installed scripts are found.
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["python", "server.py"]
+CMD ["python", "app/server.py"]
