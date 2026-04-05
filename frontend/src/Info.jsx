@@ -49,7 +49,7 @@ const Info = () => {
 
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/dam/${decodedName}`)
+    fetch(`/api/dam/${decodedName}`)
       .then(res => res.json())
       .then(json => {
         const formatted = json.map(r => ({
@@ -100,7 +100,7 @@ const Info = () => {
 
     setIsPredicting(true);
     try {
-        const response = await fetch(`http://localhost:5000/api/predict`, {
+        const response = await fetch(`/api/predict`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
