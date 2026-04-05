@@ -1,0 +1,36 @@
+services:
+  backend:
+    build: ./backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      MYSQL_HOST: 'db'
+      MYSQL_DATABASE: 'dams_db'
+      MYSQL_USER: 'dam'
+      MYSQL_PASSWORD: 'bSZJe5NpFAbdqZiTxj9pa'
+    ports:
+      - '9501:5000'
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "9502:80"
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'dams_db'
+      MYSQL_USER: 'dam'
+      MYSQL_PASSWORD: 'bSZJe5NpFAbdqZiTxj9pa'
+      MYSQL_ROOT_PASSWORD: 'G5rCwvHwwreRKy54H1LfP'
+    expose:
+      - '3306'
+    volumes:
+      - /docker/dams/db_data:/var/lib/mysql
+
+volumes:
+  backend_data:

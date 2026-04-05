@@ -12,10 +12,9 @@ conn = mysql.connector.connect(host="localhost", user="root", password="", datab
 
 # Dam Center Coordinates
 LAT, LON = 41.85173, 25.40775
-# Offset for ~2km (0.018 degrees latitude is roughly 2km)
-OFFSET = 0.018 
+OFFSET = 0.013 
 
-LAG_DAYS = 5
+LAG_DAYS = 1
 
 # --- 2. MULTI-POINT WEATHER DATA ---
 cache_session = requests_cache.CachedSession('.cache', expire_after=-1)
@@ -97,12 +96,12 @@ df_train['cap'], df_train['floor'] = DAM_CAPACITY, DAM_FLOOR
 m = Prophet(
     growth='logistic', 
     seasonality_mode='multiplicative',
-    changepoint_prior_scale=4,      
-    seasonality_prior_scale=10.0,    
+    changepoint_prior_scale=6,      
+    seasonality_prior_scale=2.0,    
     yearly_seasonality=False
 )
 
-m.add_seasonality(name='yearly', period=365.25, fourier_order=15) 
+m.add_seasonality(name='yearly', period=365.25, fourier_order=12) 
 m.add_regressor('rain_lagged')
 m.add_regressor('inflow_state_lagged')
 m.add_regressor('outflow_state')
@@ -115,7 +114,9 @@ check_last_point = m.predict(df_train.tail(1))
 model_last_estimate = check_last_point['yhat'].iloc[0]
 bias = last_real_value - model_last_estimate
 
-future = m.make_future_dataframe(periods=60, freq='D')
+future = m.make_future_dataframe(periods=20, freq='D')
+
+
 future['cap'], future['floor'] = DAM_CAPACITY, DAM_FLOOR
 future = pd.merge(future, df_weather_all[['ds', 'rain']], on='ds', how='left')
 
@@ -132,7 +133,13 @@ forecast['yhat'] = forecast['yhat'] + bias
 forecast_Final = forecast[(forecast['ds'] >= '2026-01-01') & (forecast['ds'] <= '2026-02-28')]
 
 # --- 6. REAL DATA PREP ---
-df_real = pd.read_sql("SELECT Дата as ds, Разполагаем as y FROM dam_his WHERE DamId = 33 AND YEAR(Дата) = 2026", conn)
+df_real = pd.read_sql("""
+SELECT Дата as ds, Разполагаем as y
+FROM dam_his
+WHERE DamId = 33
+AND Дата >= '2026-01-01'
+AND Дата <= '2026-01-20'
+""", conn)
 df_real['ds'] = pd.to_datetime(df_real['ds'])
 df_real['y'] = pd.to_numeric(df_real['y'], errors='coerce')
 df_real = df_real.sort_values('ds').set_index('ds').resample('D').mean().interpolate(method='time').reset_index()
