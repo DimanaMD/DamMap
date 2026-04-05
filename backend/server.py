@@ -9,6 +9,7 @@ import requests_cache
 from retry_requests import retry
 from datetime import datetime
 from waitress import serve
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -17,12 +18,20 @@ cache_session = requests_cache.CachedSession('.cache', expire_after=-1)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 openmeteo = openmeteo_requests.Client(session=retry_session)
 
+DB_HOST = os.getenv('MYSQL_HOST', 'localhost')
+DB_USER = os.getenv('MYSQL_USER', 'root')
+DB_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+DB_DATABASE = os.getenv('MYSQL_DATABASE','dams_db')
+
+
+
+
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="dams_db"
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_DATABASE
     )
 
 @app.route('/api/dam/<name>', methods=['GET'])
