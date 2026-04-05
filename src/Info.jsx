@@ -8,7 +8,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { styles, THEME } from "./assets/Javascript/infoStyles";
 import damsData from "./json/dams_data.json";
-import damDescriptions from "./assets/Javascript/res";
+import damDescriptions, { reservoirs } from "./assets/Javascript/res";
 import {damAreas} from "./assets/Javascript/res.js";
 
 
@@ -29,6 +29,8 @@ const Info = () => {
   const [filterType, setFilterType] = useState("10");
   const [activeChart, setActiveChart] = useState("обем");
   const [predictionDays, setPredictionDays] = useState(7);
+  const [predictionData, setPredictionData] = useState([]);
+  const [isPredicting, setIsPredicting] = useState(false);
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -80,6 +82,40 @@ const Info = () => {
     setFilteredData(filtered);
   }, [filterType, selectedMonth, selectedYear, data]);
 
+ const handlePredict = async () => {
+    const resInfo = reservoirs.find(r => r["Име"] === decodedName);
+    
+    if (!resInfo || !resInfo.position) {
+        alert("Липсват координати за този язовир!");
+        return;
+    }
+
+    setIsPredicting(true);
+    try {
+        const response = await fetch(`http://localhost:5000/api/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name: decodedName, 
+                days: predictionDays,
+                cords: resInfo.position // Увери се, че това е [lat, lon]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Сървърна грешка: ${response.status}`);
+        }
+
+        const json = await response.json();
+        setPredictionData(json);
+    } catch (error) {
+        console.error("Грешка при прогнозиране:", error);
+        alert("Сървърът се забави твърде много или възникна грешка. Проверете конзолата на Python.");
+    } finally {
+        setIsPredicting(false);
+    }
+};
+
   /* ---------- navigation ---------- */
 
   const prevPeriod = () => {
@@ -109,11 +145,13 @@ const Info = () => {
       setSelectedYear(y => y + 1);
     }
   };
-
-
   const hasData = data.length > 0;
   const deadVol = damDetails?.["Мъртъв обем"] ?? (hasData ? data[0].Мъртъв_обем : 0);
   const totalVol = damDetails?.["Общ обем"] ?? (hasData ? data[0].Общ_обем : 0);
+  const predictionGlow = {
+    filter: "drop-shadow(0px 0px 6px rgba(239, 68, 68, 0.6))"
+  };
+  const combinedChartData = [...filteredData, ...predictionData];
 
   return (
     <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -180,8 +218,6 @@ const Info = () => {
               )} 
             </div>
           )}
-
-
           <div style={styles.controlPanel}>
 
             <div style={styles.buttonGroup}>
@@ -240,15 +276,17 @@ const Info = () => {
                 ))}
               </select>
               <button
-                onClick={() => {}}
+                onClick={handlePredict}
+                disabled={isPredicting}
                 style={{
                   ...styles.filterBtn,
-                  backgroundColor: THEME.primary,
+                  backgroundColor: isPredicting ? "#94a3b8" : THEME.primary,
                   color: "white",
-                  borderColor: THEME.primary
+                  borderColor: isPredicting ? "#94a3b8" : THEME.primary,
+                  cursor: isPredicting ? "not-allowed" : "pointer"
                 }}
               >
-                Прогнозирай
+                {isPredicting ? "Зареждане..." : "Прогнозирай"}
               </button>
             </div>
 
@@ -274,9 +312,9 @@ const Info = () => {
         <div style={styles.chartWrapper}>
           {activeChart === "обем" && (
             <ChartLayout
-              data={filteredData}
+              data={combinedChartData}
               unit="m³"
-              yDomain={[0, (dataMax) => Math.max(dataMax, totalVol) + 30]}
+              yDomain={[0, (dataMax) => Math.round(Math.max(dataMax, totalVol) + dataMax*0.05)]}
             >
               <Line 
                 type="monotone" 
@@ -297,6 +335,21 @@ const Info = () => {
                 dot={false} 
                 activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
               />
+             {predictionData.length > 0 && (
+                <Line 
+                  type="monotone" 
+                  dataKey="prediction" 
+                  name="Прогноза (AI)"
+                  stroke="#ef4444"          // Ярко червено
+                  strokeWidth={4}           // Малко по-дебела за акцент
+                  strokeDasharray="8 5"     // По-дълги прекъсвания за модерен вид
+                  dot={{ r: 4, fill: "#ef4444", strokeWidth: 0 }} // Точки само на прогнозата
+                  activeDot={{ r: 8, strokeWidth: 0, fill: "#ef4444" }}
+                  style={predictionGlow}    // Добавяме сиянието
+                  connectNulls={true}       // Свързва историческата линия с прогнозата
+                  animationDuration={2000}  // Плавно рисуване
+                />
+              )}
               <ReferenceLine 
                 y={deadVol} 
                 stroke="#ef4444" 
@@ -383,7 +436,21 @@ const ChartLayout = ({ children, data, yDomain }) => (
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
         <YAxis domain={yDomain} />
-        <Tooltip />
+        <Tooltip 
+  formatter={(value, name, props) => {
+    // Проверяваме дали името на линията е "Прогноза (AI)" 
+    // или дали в данните на точката съществува ключ 'prediction'
+    if (name === "Прогноза (AI)" || props.payload.prediction !== undefined) {
+      return [Number(value).toFixed(3) + " m³", name];
+    }
+    
+    // За всички останали линии (Наличен обем, Приток и т.н.) 
+    // показваме стандартно закръгляне или оригиналната стойност
+    return [value.toLocaleString() + " m³", name];
+  }} 
+  labelStyle={{ color: THEME.primary, fontWeight: "bold" }}
+  contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
+/>
         <Legend />
         {children}
       </LineChart>
