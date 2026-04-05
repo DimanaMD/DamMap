@@ -329,20 +329,20 @@ const Info = () => {
                 type="monotone" 
                 dataKey="Наличен" 
                 name="Наличен обем"
-                stroke="#0ea5e9" 
-                strokeWidth={3} 
-                dot={false} 
-                activeDot={{ r: 6, strokeWidth: 0, fill: "#0ea5e9" }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="Разполагаем" 
-                name="Разполагаем обем"
                 stroke="#cbd5e1" 
                 strokeWidth={2} 
                 strokeDasharray="5 5"
                 dot={false} 
                 activeDot={{ r: 6, strokeWidth: 0, fill: "#cbd5e1" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Разполагаем" 
+                name="Разполагаем обем"
+                stroke="#0ea5e9" 
+                strokeWidth={4} 
+                dot={false} 
+                activeDot={{ r: 6, strokeWidth: 0, fill: "#0ea5e9" }}
               />
              {predictionData.length > 0 && (
                 <Line 
